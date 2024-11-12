@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'client',
     'accounts',
+    'Contas_Bancarias',
 ]
 
 MIDDLEWARE = [
