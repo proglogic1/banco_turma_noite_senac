@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url('https://www.folhape.com.br/imagem/folhape/esportes/855x497/20220822101537561454d1.jpg') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Overlay semi-transparente */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(75, 0, 130, 0.5); /* Cor roxa com 50% de transparência */
+            z-index: 1;
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            z-index: 2; /* Coloca o login-container acima do overlay */
+        }
+
+        .login-container h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-container p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .form-group input:focus {
+            border-color: #ff4081;
+            outline: none;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .forgot-password {
+            display: block;
+            margin-top: -15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+            text-decoration: none;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff4081; /* Botão rosa */
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .login-button:hover {
+            background-color: #e0356d;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <p>Digite os seus dados de acesso no campo abaixo.</p>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="Digite seu e-mail" required>
+                <div class="error-message" id="emailError">Por favor, insira um e-mail válido.</div>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" placeholder="Digite sua senha" required>
+                <div class="error-message" id="passwordError">Por favor, insira sua senha.</div>
+            </div>
+            <a href="C:\Users\Aluno\Documents\Curso Python Henrique\banco_turma_noite_senac\templates\accounts\redefinir_senha.html" class="forgot-password">Esqueci minha senha</a>
+            <button type="submit" class="login-button">Acessar</button><br><br>
+            <a href="home.html">Página inicial</a>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let isValid = true;
+
+            // Limpa mensagens de erro anteriores
+            document.getElementById('emailError').style.display = 'none';
+            document.getElementById('passwordError').style.display = 'none';
+
+            // Valida campo de e-mail
+            const email = document.getElementById('email').value;
+            const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+            if (!email.match(emailPattern)) {
+                document.getElementById('emailError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Valida campo de senha
+            const password = document.getElementById('password').value;
+            if (password === "") {
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Se os campos estão válidos, envie o formulário
+            if (isValid) {
+                alert("Login realizado com sucesso!");
+                // Aqui você pode enviar o formulário ou redirecionar o usuário para outra página
+            }
+        });
+    </script>
+</body>
+</html>
