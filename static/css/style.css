@@ -10,30 +10,40 @@ body {
 
 .login-container {
     width: 400px;
-    padding: 20px;
-    border-radius: 8px;
+    padding: 30px;
+    border-radius: 10px;
     background-color: #ffffff;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
 }
 
 .login-container h2 {
-    margin-bottom: 20px;
-    font-size: 24px;
+    margin-bottom: 10px;
+    font-size: 32px;
     color: #00796b;
 }
 
 .login-container input[type="email"],
 .login-container input[type="password"] {
-    width: 100%;
+    width: 90%;
     padding: 10px;
-    margin: 8px 0;
-    border: 1px solid #ccc;
+    margin: 10px 0;
+    border: 1px solid #000000;
     border-radius: 4px;
+}
+
+.login-container label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #666666;
+    margin: 5px;
+    font-weight: normal; 
 }
 
 .login-container input[type="checkbox"] {
     margin-right: 5px;
+
 }
 
 .login-container button {
