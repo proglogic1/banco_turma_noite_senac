@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Clientes e Contas</title>
+</head>
+{% block content %}
+<body>
+    <h1>Lista de Clientes e Contas</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Cliente ID</th>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>CPF</th>
+                <th>Email</th>
+                <th>Conta ID</th>
+                <th>Número da Conta</th>
+                <th>Agência</th>
+                <th>Tipo de Conta</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for conta in contas %}
+                <tr>
+                    <td>{{ conta.id_cliente.id }}</td>
+                    <td>{{ conta.id_cliente.nome }}</td>
+                    <td>{{ conta.id_cliente.telefone }}</td>
+                    <td>{{ conta.id_cliente.cpf }}</td>
+                    <td>{{ conta.id_cliente.email }}</td>
+                    <td>{{ conta.id_conta }}</td>
+                    <td>{{ conta.nr_conta }}</td>
+                    <td>{{ conta.nr_agencia }}</td>
+                    <td>{{ conta.tipo_conta }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+{% endblock %}
+</html>
