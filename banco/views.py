@@ -6,6 +6,9 @@ import random
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+import requests  # type: ignore
 
 #@login_required
 def gerar_numero_conta():
@@ -13,6 +16,8 @@ def gerar_numero_conta():
             numero_conta = str(random.randint(10000, 99999))
             if not Conta.objects.filter(nr_conta=numero_conta).exists():
                 return numero_conta
+
+#==================================================#
 
 #@login_required
 def cadastrar_cliente(request):
@@ -38,6 +43,8 @@ def cadastrar_cliente(request):
     
     return render(request, 'clientes/cadastrar_cliente.html', {'form': form})
 
+#==================================================#
+
 #@login_required
 def listar_clientes_contas(request):
     clientes = Cliente.objects.all()
@@ -48,21 +55,57 @@ def listar_clientes_contas(request):
     }
     return render(request, 'clientes/listar_clientes_contas.html', context)
 
+#==================================================#
 #API
 # View para listar e criar clientes
 class ClienteListCreateView(generics.ListCreateAPIView):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
 
+#==================================================#
+
 # View para listar e criar contas
 class ContaListCreateView(generics.ListCreateAPIView):
     queryset = Conta.objects.select_related('id_cliente')  # Otimiza a consulta para incluir dados do cliente
     serializer_class = ContaSerializer
 
+#==================================================#
 class ClienteCreateAPIView(APIView):
     def post(self, request):
         serializer = ClienteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED) # type: ignore
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # type: ignore
+
+#==================================================#
+
+@api_view(['GET'])
+def Buscar_Cep(request):
+    CEP = request.query_params.get('cep')
+    
+    if not CEP:
+        return Response({"error": "CEP não informado"}, status=400)
+#---------------------------------------------------#
+    #Validando o formato do CEP, se ele contém 8 digitos
+    if not CEP.isdigit() or len(CEP) !=8: 
+        return Response({"error" : "CEP inválido"}, status=400)
+#---------------------------------------------------#
+    #Cunsultando o CEP
+    url = f'https://viacep.com.br/ws/{CEP}/json/'
+    response = requests.get(url)
+#---------------------------------------------------#
+    #Verificando se o serviço retornou com sucesso
+    if response.status_code !=200:
+        return Response({"error": "erro ao consultar o CEP"}, status=500)
+
+    data = response.json()
+#---------------------------------------------------#
+    #Caso o CEP não seja encontrado ou esteja inválido
+    if 'erro' in data:
+        return Response({"error":"CEP não encontrado"}, status=404)
+    return Response(data)
+
+
+def endereco(request):
+    return render(request, 'localizacao/localizacao.html')

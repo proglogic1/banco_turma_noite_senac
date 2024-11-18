@@ -24,6 +24,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+#==================================================#
 class Cliente(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=256)
@@ -74,3 +75,5 @@ class Movimento(models.Model):
     tipo_movimento = models.CharField(max_length=10, choices=[('Credito', 'Credito'), ('Debito', 'Debito')])
     valor = models.FloatField()
     data = models.DateTimeField(auto_now_add=True)
+
+#==================================================#
