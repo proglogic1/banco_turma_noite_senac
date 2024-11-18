@@ -35,8 +35,8 @@ class Cliente(AbstractBaseUser):
     
  # Campos de autenticação
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=True)  # Para indicar se o usuário é um administrador
-    is_superuser = models.BooleanField(default=True)  # Para indicar se o usuário é superadministrador
+    is_staff = models.BooleanField(default=False)  # Para indicar se o usuário é um administrador
+    is_superuser = models.BooleanField(default=False)  # Para indicar se o usuário é superadministrador
 
     # Campos obrigatórios para autenticação
     USERNAME_FIELD = 'cpf'
