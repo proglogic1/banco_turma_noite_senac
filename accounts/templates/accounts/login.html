@@ -11,9 +11,10 @@
 <body>
     <div class="login-container">
         <h2>Login</h2>
-        <form action="#">
-            <input type="text" placeholder="Seu CPF" required maxlength="14" oninput="this.value = this.value.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');">
-            <input type="password" placeholder="Sua senha" required>
+        <form  method ='POST'>
+            {% csrf_token %}
+            <input type="text" name='cpf' placeholder="Seu CPF" required maxlength="14" oninput="this.value = this.value.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');">
+            <input type="password" name='password' placeholder="Sua senha" required>
             <label>
                 <input type="checkbox"> Manter-me logado
             </label>
