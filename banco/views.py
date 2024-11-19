@@ -18,25 +18,22 @@ def gerar_numero_conta():
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
+        
         if form.is_valid():
-            cliente = form.save(commit=False)
-            cliente.set_password(form.cleaned_data['senha'])  # Define a senha
+            # Aqui o form já é válido, então podemos criar e salvar o cliente
+            cliente = form.save(commit=False)  # Não salva imediatamente, ainda podemos manipular
+            cliente.set_password(form.cleaned_data['senha'])  # Define a senha criptografada
             cliente.save()  # Agora sim, salva o cliente no banco de dados
-            tipo_conta = form.cleaned_data['tipo_conta']
             
-            # Criar automaticamente uma conta associada ao cliente
-            Conta.objects.create(
-                id_cliente=cliente,
-                nr_conta=gerar_numero_conta(),
-                nr_agencia="0001",
-                tipo_conta=tipo_conta  # ou 'Poupanca', conforme necessário
-            )
+            return redirect('login')  # Redireciona para uma página de listagem de clientes
             
-            return redirect('listar_clientes_contas')  # Redireciona para uma página de listagem de clientes
+        else:
+            print('Formulário inválido:', form.errors)  # Exibe os erros no console para debug
+
     else:
-        form = ClienteForm()
+        form = ClienteForm()  # Formulário vazio na requisição GET
     
-    return render(request, 'clientes/cadastrar_cliente.html', {'form': form})
+    return render(request, 'clientes/cadastro.html', {'form': form})
 
 #@login_required
 def listar_clientes_contas(request):
