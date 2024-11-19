@@ -28,7 +28,7 @@ class Cliente(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=256)
     telefone = models.CharField(max_length=11)
-    cpf = models.CharField(max_length=11, unique=True)
+    cpf = models.CharField(max_length=14, unique=True)
     email = models.EmailField(unique=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
     
@@ -40,7 +40,7 @@ class Cliente(AbstractBaseUser):
 
     # Campos obrigatórios para autenticação
     USERNAME_FIELD = 'cpf'
-    REQUIRED_FIELDS = ['email', 'nome', 'telefone']
+    REQUIRED_FIELDS = ['email','telefone']
 
     objects = CustomUserManager()
 

@@ -3,7 +3,8 @@ from .views import cadastrar_cliente,listar_clientes_contas,ClienteListCreateVie
 
 urlpatterns = [
     path('',listar_clientes_contas,name='listar_clientes_contas'),
-    path('cadastrar/', cadastrar_cliente, name='cadastrar_cliente'),
+    path('cadastro/', cadastrar_cliente , name ='cadastro' ),
+    #path('cadastrar/', cadastrar_cliente, name='cadastrar_cliente'),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('api/clientes/', ClienteListCreateView.as_view(), name='api-clientes'),
