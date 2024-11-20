@@ -27,7 +27,7 @@ class CustomUserManager(BaseUserManager):
 class Cliente(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=256)
-    telefone = models.CharField(max_length=11)
+    telefone = models.CharField(max_length=14)
     cpf = models.CharField(max_length=14, unique=True)
     email = models.EmailField(unique=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
@@ -62,6 +62,7 @@ class Conta(models.Model):
     nr_agencia = models.CharField(max_length=3)
     dt_cadastro = models.DateTimeField(auto_now_add=True)
     tipo_conta = models.CharField(max_length=10, choices=[('Corrente', 'Corrente'), ('Poupanca', 'Poupanca')])
+    saldo = models.FloatField(default=0.0)
 
     def __str__(self):
         return self.NR_conta

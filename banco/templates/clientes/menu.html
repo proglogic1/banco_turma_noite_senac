@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card text-center shadow">
+        <div class="card-header bg-primary text-white">
+            <!-- Exibe o nome do cliente logado -->
+            <h2>Bem-vindo, {{nome}}</h2>
+        </div>
+        <div class="card-body">
+            <h4 class="card-title text-primary">O que você gostaria de fazer hoje?</h4>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="{% url 'cadastrar_conta' %}" class="btn btn-outline-primary w-100 p-3">
+                        <i class="bi bi-wallet2"></i> Criar Conta
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'editar_saldo' %}" class="btn btn-outline-success w-100 p-3">
+                        <i class="bi bi-currency-exchange"></i> Transferir Dinheiro
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'listar_clientes_contas' %}" class="btn btn-outline-info w-100 p-3">
+                        <i class="bi bi-file-text"></i> Consultar Extrato
+                    </a>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <a href="{% url 'listar_clientes_contas' %}" class="btn btn-outline-warning w-100 p-3">
+                        <i class="bi bi-person-badge"></i> Atualizar Cadastro
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100 p-3">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-muted">
+            <small>&copy; 2024 Meu Sistema Bancário</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
