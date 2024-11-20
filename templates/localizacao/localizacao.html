@@ -12,21 +12,42 @@
         <h1>Consulta de CEP</h1>
         
         <!-- Formulário de entrada do CEP -->
-        <div class="form-container">
-            <input type="text" id="cep" placeholder="Digite o CEP" maxlength="8" />
-            <button onclick="consultarCEP()">Consultar</button>
-        </div>
+        <form id="cep-form" onsubmit="event.preventDefault(); consultarCEP();">
+            <div class="form-container">
+                <label for="cep">CEP:</label>
+                <input type="text" id="cep" name="cep" placeholder="Digite o CEP" maxlength="8" required />
+                <button type="submit">Consultar</button>
+            </div>
+        </form>
         
         <!-- Resultados da consulta -->
         <div class="result-container" id="result-container" style="display: none;">
             <h3>Informações do Endereço</h3>
-            <p><strong>CEP:</strong> <span id="cep-info"></span></p>
-            <p><strong>Logradouro:</strong> <span id="logradouro-info"></span></p>
-            <p><strong>Bairro:</strong> <span id="bairro-info"></span></p>
-            <p><strong>Cidade:</strong> <span id="localidade-info"></span></p>
-            <p><strong>Estado:</strong> <span id="uf-info"></span></p>
-            <p><strong>DDD:</strong> <span id="ddd-info"></span></p>
-            
+            <div>
+                <label for="cep-info">CEP:</label>
+                <input type="text" id="cep-info" value="" readonly />
+            </div>
+            <div>
+                <label for="logradouro-info">Logradouro:</label>
+                <input type="text" id="logradouro-info" value="" />
+            </div>
+            <div>
+                <label for="bairro-info">Bairro:</label>
+                <input type="text" id="bairro-info" value="" />
+            </div>
+            <div>
+                <label for="localidade-info">Cidade:</label>
+                <input type="text" id="localidade-info" value="" />
+            </div>
+            <div>
+                <label for="uf-info">Estado:</label>
+                <input type="text" id="uf-info" value="" />
+            </div>
+            <div>
+                <label for="ddd-info">DDD:</label>
+                <input type="text" id="ddd-info" value="" />
+            </div>
+        </div>
         
         <!-- Exibição de erro -->
         <div class="error" id="error-container" style="display: none;">
@@ -35,54 +56,38 @@
     </div>
 
     <script>
-        // Função para consultar o CEP
         function consultarCEP() {
-            // Pegando o valor do CEP e removendo caracteres não numéricos
             const cep = document.getElementById("cep").value.replace(/\D/g, '');
             const resultContainer = document.getElementById("result-container");
             const errorContainer = document.getElementById("error-container");
             
-            // Resetando os campos de resultado e erro
             resultContainer.style.display = "none";
             errorContainer.style.display = "none";
-            
-            // Verificando se o CEP tem 8 dígitos
+
             if (cep.length !== 8) {
                 alert("CEP inválido! Certifique-se de que tem 8 dígitos.");
                 return;
             }
 
-            // Realizando a requisição para a API
             fetch(`/banco/CEP/?cep=${cep}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Caso haja erro na consulta
                     if (data.error) {
                         errorContainer.style.display = "block";
                     } else {
-                        // Preenchendo os campos com os dados da resposta
-                        document.getElementById("cep-info").textContent = data.cep || 'Não disponível';
-                        document.getElementById("logradouro-info").textContent = data.logradouro || 'Não disponível';
-                        document.getElementById("bairro-info").textContent = data.bairro || 'Não disponível';
-                        document.getElementById("localidade-info").textContent = data.localidade || 'Não disponível';
-                        document.getElementById("uf-info").textContent = data.uf || 'Não disponível';
-                        document.getElementById("ddd-info").textContent = data.ddd || 'Não disponível';
-                        resultContainer.style.display = "block"; // Exibe a div de resultado
+                        document.getElementById("cep-info").value = data.cep || 'Não disponível';
+                        document.getElementById("logradouro-info").value = data.logradouro || 'Não disponível';
+                        document.getElementById("bairro-info").value = data.bairro || 'Não disponível';
+                        document.getElementById("localidade-info").value = data.localidade || 'Não disponível';
+                        document.getElementById("uf-info").value = data.uf || 'Não disponível';
+                        document.getElementById("ddd-info").value = data.ddd || 'Não disponível';
+
+                        resultContainer.style.display = "block";
                     }
                 })
-                .catch(error => {
-                    // Exibe a mensagem de erro se a requisição falhar
+                .catch(() => {
                     errorContainer.style.display = "block";
                 });
-        }
-
-        // Função para permitir a edição das informações
-        function editarInformacoes() {
-            // Exibindo o campo para o usuário alterar o CEP
-            const cepInput = document.getElementById("cep");
-            cepInput.value = document.getElementById("cep-info").textContent;  // Preenchendo o campo com o CEP atual
-            document.getElementById("result-container").style.display = "none"; // Escondendo os resultados
-            document.getElementById("error-container").style.display = "none";  // Escondendo o erro
         }
     </script>
 
