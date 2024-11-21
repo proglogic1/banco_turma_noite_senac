@@ -48,7 +48,7 @@
 {% block content %}
 <body>
     <div class="form-container">
-        <h2>Cadastrar Cliente</h2>
+        <h2>{{ cliente.instance.id|yesno:"Atualizar Cadastro,Cadastro" }}</h2>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}

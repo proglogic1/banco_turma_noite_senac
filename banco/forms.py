@@ -36,3 +36,8 @@ class SaldoForm(forms.Form):
         label="Novo Saldo", 
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
+
+class ClienteAlterarForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        fields = ['nome', 'cpf', 'telefone', 'email']

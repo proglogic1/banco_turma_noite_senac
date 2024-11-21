@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Cliente, Conta
-from .forms import ClienteForm, ContaForm,SaldoForm
+from .forms import ClienteForm, ContaForm,ClienteAlterarForm
 import random
 from .serializers import ClienteSerializer, ContaSerializer
-from rest_framework import generics
+from rest_framework import generics,response,status
 from rest_framework.views import APIView
 
 #@login_required
@@ -14,7 +14,7 @@ def gerar_numero_conta():
             if not Conta.objects.filter(nr_conta=numero_conta).exists():
                 return numero_conta
 
-# @login_required  # Descomente se necessário
+ 
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
@@ -31,7 +31,7 @@ def cadastrar_cliente(request):
                 id_cliente=cliente,
                 nr_conta=numero_conta,
                 nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
-                tipo_conta="Corrente"  # Você pode ajustar para um valor padrão ou capturar do formulário
+                tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
             return redirect('menu')  # Redireciona após o cadastro
@@ -44,6 +44,7 @@ def cadastrar_cliente(request):
     
     return render(request, 'clientes/cadastro.html', {'form': form})
 
+@login_required
 def cadastrar_conta(request):
     if request.method == 'POST':
         form = ContaForm(request.POST)
@@ -64,6 +65,17 @@ def cadastrar_conta(request):
         form = ContaForm()
 
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
+@login_required
+def atualizar_cadastro(request, id):
+    cliente = get_object_or_404(Cliente, id=id)
+    if request.method == 'POST':
+        form = ClienteAlterarForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect('menu')
+    else:
+        form = ClienteAlterarForm(instance=cliente)
+    return render(request, 'clientes/atualizar_cadastro.html', {'form': form})
 
 @login_required
 def listar_clientes_contas(request):
@@ -91,30 +103,34 @@ def editar_saldo(request, conta_id):
             return redirect('menu')  # Redireciona para o menu após a atualização
 
     return render(request, 'clientes/editar_saldo.html', {'contas': contas})
-
+@login_required
 def menu(request):
-   # Verifica se a conta foi selecionada e salva na sessão
+    cliente = Cliente.objects.filter(id=request.user.id)
+    selected_conta_id = request.GET.get('conta_id')
     if request.method == 'POST':
         conta_id = request.POST.get('conta_id')
         if conta_id:
-            request.session['conta_selecionada'] = conta_id  # Salva a conta selecionada na sessão
+            request.session['selected_conta_id'] = conta_id  # Salva a conta selecionada na sessão
 
     # Verifica se há uma conta selecionada na sessão
     conta_selecionada = None
-    if 'conta_selecionada' in request.session:
-        conta_selecionada = Conta.objects.get(id=request.session['conta_selecionada'])
+    if 'selected_conta_id' in request.session:
+        selected_conta_id = Conta.objects.get(id=request.session['selected_conta_id'])
 
     # Pega todas as contas do cliente
     contas = Conta.objects.filter(id_cliente=request.user)
-
+    
     # Pega o saldo da conta selecionada
-    saldo = conta_selecionada.saldo if conta_selecionada else 0.00
+    saldo = selected_conta_id.saldo if selected_conta_id else 0.00
 
-    return render(request, 'clientes/menu.html', {
+    context = {
+        'cliente': cliente,
         'contas': contas,
-        'conta_selecionada': conta_selecionada,
+        'selected_conta_id': selected_conta_id,
         'saldo': saldo
-    })
+    
+    }
+    return render(request, 'clientes/menu.html',context)
 
 #API
 # View para listar e criar clientes
@@ -132,5 +148,5 @@ class ClienteCreateAPIView(APIView):
         serializer = ClienteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return response(serializer.data, status=status.HTTP_201_CREATED)
+        return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
