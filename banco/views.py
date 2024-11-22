@@ -20,12 +20,13 @@ def cadastrar_cliente(request):
         form = ClienteForm(request.POST)
         
         if form.is_valid():
-            # Salva o cliente
-            cliente = form.save(commit=False)
+             # Aqui o form já é válido, então podemos criar e salvar o cliente
+            cliente = form.save(commit=False)  # Não salva imediatamente, ainda podemos manipular
             cliente.set_password(form.cleaned_data['senha'])  # Define a senha criptografada
-            cliente.save()
+            cliente.save()  # Agora sim, salva o cliente no banco de dados
             
-            # Cria a conta associada ao cliente
+                
+            
             numero_conta = gerar_numero_conta()  # Gera um número único de conta
             conta = Conta.objects.create(
                 id_cliente=cliente,
@@ -34,7 +35,8 @@ def cadastrar_cliente(request):
                 tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
-            return redirect('menu')  # Redireciona após o cadastro
+            return redirect('login')  # Redireciona para uma página de listagem de clientes
+            # Cria a conta associada ao cliente
         
         else:
             print('Formulário inválido:', form.errors)  # Exibe erros para debug
