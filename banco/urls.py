@@ -9,7 +9,7 @@ urlpatterns = [
     path('menu/', menu, name='menu'),
     path('cadastrar_conta/', cadastrar_conta , name ='cadastrar_conta' ),
     path('atualizar_cadastro/<int:id>/', atualizar_cadastro, name='atualizar_cadastro'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    #path('logout/', logout_view, name='logout'),
 
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
