@@ -15,4 +15,6 @@ urlpatterns = [
 
     path('api/clientes/', ClienteListCreateView.as_view(), name='api-clientes'),
     path('api/contas/', ContaListCreateView.as_view(), name='api-contas'),
+    path('poupanca/', transacao_poupanca, name='transacao_poupanca'),
+    path('corrente/', transacao_corrente, name='transacao_corrente'),
 ]
