@@ -1,81 +1,103 @@
-
-{
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-}
-
+/* Estilização geral */
 body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f9f9f9;
 }
 
-.form-container {
-    width: 350px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
+/* Container do formulário */
 form {
-    display: flex;
-    flex-direction: column;
+    background-color: #fff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 700px; /* Ajustado para 2 colunas */
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+    grid-gap: 15px; /* Espaço entre os campos */
+    box-sizing: border-box;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    font-size: 14px;
+/* Cabeçalho */
+h1 {
+    grid-column: span 2; /* O título ocupa as 2 colunas */
+    text-align: center;
     color: #333;
-    margin-bottom: 5px;
-    display: block;
+    margin-bottom: 20px;
+    font-size: 24px;
 }
 
-.form-group label span {
-    color: #00796b; /* Vermelho para o asterisco */
-}
-
-.form-group input {
+/* Campos de entrada */
+input, select, button {
     width: 100%;
-    padding: 10px;
-    font-size: 14px;
+    padding: 10px 15px;
+    border-radius: 5px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-}
-
-.form-group input:focus {
-    border-color: #00796b; /* Cor de foco */
-    outline: none;
-}
-
-.eye-icon {
-    position: absolute;
-    right: 20px;
-    bottom: 35px;
-    cursor: pointer;
-    font-size: 18px;
-    color: #ccc;
-}
-
-.submit-button {
-    width: 100%;
-    padding: 12px;
     font-size: 16px;
-    color: #fff;
-    background-color: #00796b; /* Vermelho do botão */
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    outline: none;
+    box-sizing: border-box;
 }
 
-.submit-button:hover {
-    background-color: #00796b;
+/* Placeholder visível */
+input::placeholder {
+    color: #aaa;
+}
+
+/* Estilo obrigatório */
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+label span {
+    color: red;
+    font-weight: bold;
+}
+
+/* Botão de cadastro */
+button {
+    background-color: #007bff;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    padding: 15px;
+    transition: background-color 0.3s ease;
+    grid-column: span 2; /* Botão ocupa as 2 colunas */
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Mensagem de aviso */
+small {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #888;
+    grid-column: span 2; /* Aviso ocupa as 2 colunas */
+}
+
+/* Ajuste específico para evitar cortes */
+form input,
+form select {
+    min-width: 0; /* Previne cortes em tamanhos pequenos */
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+    form {
+        grid-template-columns: 1fr; /* Reduz para 1 coluna em telas pequenas */
+    }
+
+    h1, button, small {
+        grid-column: span 1; /* Ajusta o título, botão e aviso para 1 coluna */
+    }
 }
