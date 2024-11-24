@@ -7,7 +7,7 @@
     <div class="card text-center shadow">
         <div class="card-header bg-primary text-white">
             <!-- Exibe o nome do cliente logado -->
-            <h2>Bem-vindo, {{user.nome}}</h2>
+            <h2>Bem-vindo, {{ user.nome }}</h2>
         </div>
         <div class="card-body">
             <h4 class="card-title text-primary">O que você gostaria de fazer hoje?</h4>
@@ -18,13 +18,13 @@
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="{% url 'listar_clientes_contas' %}" class="btn btn-outline-success w-100 p-3">
-                        <i class="bi bi-currency-exchange"></i> Transferir Dinheiro
+                    <a href="{% url 'atualizar_saldo' %}" class="btn btn-outline-success w-100 p-3">
+                        <i class="bi bi-currency-exchange"></i> Depositar Dinheiro
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="{% url 'listar_clientes_contas' %}" class="btn btn-outline-info w-100 p-3">
-                        <i class="bi bi-file-text"></i> Consultar Extrato
+                    <a href="{% url 'extrato_conta' %}" class="btn btn-outline-info w-100 p-3">
+                        <i class="bi bi-file-text"></i> Extrato
                     </a>
                 </div>
             </div>
@@ -32,6 +32,11 @@
                 <div class="col-md-4">
                     <a href="{% url 'atualizar_cadastro' user.id %}" class="btn btn-outline-warning w-100 p-3">
                         <i class="bi bi-person-badge"></i> Atualizar Cadastro
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'transferencia' %}" class="btn btn-outline-secondary w-100 p-3">
+                        <i class="bi bi-arrow-left-right"></i> Transferência
                     </a>
                 </div>
                 <div class="col-md-4">
