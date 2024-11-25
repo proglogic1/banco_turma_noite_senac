@@ -7,6 +7,7 @@ from django.urls import include
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/',logout_view, name='logout'),
+    
 
     path('', include(tf_urls)),
 
