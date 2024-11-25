@@ -1,5 +1,6 @@
 from .models import Conta, Cliente
 import random
+from django.contrib import messages
 
 def gerar_numero_conta():
         while True:
@@ -19,3 +20,11 @@ def verificar_tipo_conta_existe(cliente, tipo_conta):
 def verificar_conta_existe(nr_conta):
  
     return Conta.objects.filter( nr_conta=nr_conta).exists()
+
+
+def verificar_cpf_existente(request,cpf):
+    if Cliente.objects.filter(cpf=cpf) .exists():
+        messages.error(request, 'já existe uma conta com esse CPF.')
+        return True # já existe uma conta com esse CPF
+    return False # não existe nenhuma conta com esse CPF
+        
