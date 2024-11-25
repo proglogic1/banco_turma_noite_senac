@@ -15,4 +15,7 @@ urlpatterns = [
 
     path('api/clientes/', ClienteListCreateView.as_view(), name='api-clientes'),
     path('api/contas/', ContaListCreateView.as_view(), name='api-contas'),
+    
+    path('endereco/', endereco, name='Endereco'), # Renderiza a página inicial com o formulário
+    path('CEP/', Buscar_Cep, name='CEP'),# Rota para buscar o CEP
 ]

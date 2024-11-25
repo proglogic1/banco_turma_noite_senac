@@ -6,7 +6,11 @@ from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_cont
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics,response,status
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+import requests  # type: ignore
 from django.contrib import messages
+
 
 #@login_required
  
@@ -199,3 +203,36 @@ class ClienteCreateAPIView(APIView):
             serializer.save()
             return response(serializer.data, status=status.HTTP_201_CREATED)
         return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def Buscar_Cep(request):
+    CEP = request.query_params.get('cep')
+    
+    if not CEP:
+        return Response({"error": "CEP não informado"}, status=400)
+#---------------------------------------------------#
+    #Validando o formato do CEP, se ele contém 8 digitos
+    if not CEP.isdigit() or len(CEP) !=8: 
+        return Response({"error" : "CEP inválido"}, status=400)
+#---------------------------------------------------#
+    #Cunsultando o CEP
+    url = f'https://viacep.com.br/ws/{CEP}/json/'
+    response = requests.get(url)
+#---------------------------------------------------#
+    #Verificando se o serviço retornou com sucesso
+    if response.status_code !=200:
+        return Response({"error": "erro ao consultar o CEP"}, status=500)
+
+    data = response.json()
+#---------------------------------------------------#
+    #Caso o CEP não seja encontrado ou esteja inválido
+    if 'erro' in data:
+        return Response({"error":"CEP não encontrado"}, status=404)
+    return Response(data)
+
+
+def endereco(request):
+    return render(request, 'localizacao/localizacao.html')
+
+    return response(serializer.data, status=status.HTTP_201_CREATED)
+    return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
