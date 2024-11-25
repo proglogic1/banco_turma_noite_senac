@@ -8,11 +8,10 @@ from rest_framework import generics,response,status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-import requests  # type: ignore
 from django.contrib import messages
 
 
-#@login_required
+
  
 def cadastrar_cliente(request):
     if request.method == 'POST':
@@ -41,7 +40,7 @@ def cadastrar_cliente(request):
             
             messages.success(request, 'Conta criada com sucesso!')
 
-            return redirect('login')  # Redireciona para uma página de listagem de clientes
+            return redirect('two_factor:login')  # Redireciona para uma página de listagem de clientes
             # Cria a conta associada ao cliente
         
         else:
@@ -138,7 +137,7 @@ def editar_saldo(request, conta_id):
 @login_required
 def menu(request):
     if not request.user.is_authenticated:
-        return redirect('login')  # Redireciona para a página de login se necessário
+        return redirect('two_factor:login')  # Redireciona para a página de login se necessário
 
     try:
         # Ajuste aqui para relacionar Cliente ao User, se necessário
@@ -217,7 +216,7 @@ def Buscar_Cep(request):
 #---------------------------------------------------#
     #Cunsultando o CEP
     url = f'https://viacep.com.br/ws/{CEP}/json/'
-    response = requests.get(url)
+    response = request.get(url)
 #---------------------------------------------------#
     #Verificando se o serviço retornou com sucesso
     if response.status_code !=200:
