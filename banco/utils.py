@@ -27,4 +27,10 @@ def verificar_cpf_existente(request,cpf):
         messages.error(request, 'já existe uma conta com esse CPF.')
         return True # já existe uma conta com esse CPF
     return False # não existe nenhuma conta com esse CPF
+
+def verificar_email(request,email):
+    if Cliente.objects.filter(email=email) .exists():
+        messages.error(request,'Já existe uma conta com esse E-mail')
+        return True #existe outra conta com esse e-mail
+    return False #não existe nenhuma conta com esse e-mail
         
