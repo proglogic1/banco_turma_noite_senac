@@ -238,4 +238,3 @@ def historico_transacoes(request, id_conta):
     movimentos = conta.movimentos.all().order_by('-data')
     return render(request, 'historico.html', {'movimentos':movimentos})
 
-#==================================================================#
