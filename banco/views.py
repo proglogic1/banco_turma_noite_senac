@@ -50,23 +50,29 @@ def cadastrar_cliente(request):
 def cadastrar_conta(request):
     if request.method == 'POST':
         form = ContaForm(request.POST)
+        
         if form.is_valid():
-            # numero_conta = gerar_numero_conta()  # Gera um número único de conta
-            # nova_conta = form.save(commit=False)  # Não salva ainda no banco
-            # nova_conta.id_cliente = request.user  # Associa a conta ao cliente autenticado
-            # nova_conta.save()  # Salva a nova conta com o número gerado automaticamente
-            numero_conta = gerar_numero_conta()  # Gera um número único de conta
+            # Verifica se o cliente já possui uma conta do tipo selecionado
+            tipo_conta = form.cleaned_data['tipo_conta']
+            if Conta.objects.filter(id_cliente=request.user, tipo_conta=tipo_conta).exists():
+                # Se o cliente já tem uma conta do tipo corrente ou poupança, não cria outra
+                form.add_error(None, "Você já tem uma conta desse tipo!")
+                return render(request, 'clientes/cadastrar_conta.html', {'form': form})
+            
+            # Gera um número único de conta
+            numero_conta = gerar_numero_conta()  
             conta = Conta.objects.create(
                 id_cliente=request.user,
                 nr_conta=numero_conta,
                 nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
-                tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
+                tipo_conta=tipo_conta  # Captura o tipo de conta do formulário
             )
             return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
     else:
         form = ContaForm()
 
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
+
 @login_required
 def atualizar_cadastro(request, id):
     cliente = get_object_or_404(Cliente, id=id)
