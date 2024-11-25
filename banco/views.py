@@ -2,16 +2,22 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Cliente, Conta
 from .forms import ClienteForm, ContaForm,ClienteAlterarForm
-from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe
+from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe, verificar_cpf_existente
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics,response,status
 from rest_framework.views import APIView
+from django.contrib import messages
 
 #@login_required
  
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
+        cpf =  request.POST.get('cpf')
+
+        if verificar_cpf_existente(request,cpf):
+            return render(request, 'clientes/cadastro.html', {'form': form})
+
         
         if form.is_valid():
              # Aqui o form já é válido, então podemos criar e salvar o cliente
@@ -29,6 +35,8 @@ def cadastrar_cliente(request):
                 tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
+            messages.success(request, 'Conta criada com sucesso!')
+
             return redirect('login')  # Redireciona para uma página de listagem de clientes
             # Cria a conta associada ao cliente
         

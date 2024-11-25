@@ -101,3 +101,29 @@ form select {
         grid-column: span 1; /* Ajusta o título, botão e aviso para 1 coluna */
     }
 }
+
+/* alerta caso ja exista um cpf cadastrado */
+.messages {
+    margin: 1em 0;
+    padding: 0.5em;
+}
+
+.alert {
+    padding: 1em;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
