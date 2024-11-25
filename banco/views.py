@@ -9,6 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.contrib import messages
+from decimal import Decimal
+from django.http import Http404
+
+
 
 
 
@@ -209,41 +213,45 @@ class ClienteCreateAPIView(APIView):
 
 
 
-@login_required
+
 def transacao_poupanca(request):
-    try:
-        conta = Conta.objects.get(tipo_conta='poupanca')
-    except Conta.DoesNotExist:
+    conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
+    print(conta)
+    if conta is None:
         messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
-        return redirect('menu')  
+        return redirect('transacao_poupanca')  
 
-
+    
     if request.method == "POST":
         form = TransacaoForm(request.POST)
         if form.is_valid():
-            # Converter valor para Decimal
+            
             valor = Decimal(str(form.cleaned_data['valor']))
+            
             if 'depositar' in request.POST:
-                conta.saldo += valor
+                conta.saldo += valor 
                 messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
             elif 'sacar' in request.POST:
                 if conta.saldo >= valor:
-                    conta.saldo -= valor
+                    conta.saldo -= valor  
                     messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
                 else:
                     messages.error(request, "Saldo insuficiente para realizar o saque.")
+            
+           
             conta.save()
-            return redirect('transacao_poupanca')
+            return redirect('menu')
     else:
         form = TransacaoForm()
 
-    return render(request, 'clientes/transacao.html', {'conta': conta, 'form': form})
+    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form})
+
 
 
 @login_required
 def transacao_corrente(request):
    
-    conta = get_object_or_404(Conta, tipo='corrente')
+    conta = get_object_or_404(Conta, tipo_conta='corrente')
 
     if request.method == "POST":
         form = TransacaoForm(request.POST)
