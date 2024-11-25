@@ -12,6 +12,7 @@ import requests  # type: ignore
 from datetime import time
 from django.contrib import messages
 
+
 #@login_required
 def gerar_numero_conta():
         while True:
@@ -19,11 +20,26 @@ def gerar_numero_conta():
             if not Conta.objects.filter(nr_conta=numero_conta).exists():
                 return numero_conta
 
+from django.contrib import messages
+
+
+
  
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
+
         
+
+        cpf =  request.POST.get('cpf')
+        email = request.POST.get('email')
+
+        if verificar_cpf_existente(request,cpf):
+            return render(request, 'clientes/cadastro.html', {'form': form})
+
+        if verificar_email(request,email):
+            return render(request, 'clientes/cadastro.html', {'form': form})
+
         if form.is_valid():
              # Aqui o form já é válido, então podemos criar e salvar o cliente
             cliente = form.save(commit=False)  # Não salva imediatamente, ainda podemos manipular
@@ -40,7 +56,13 @@ def cadastrar_cliente(request):
                 tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
+
             return redirect('login')  # Redireciona para uma página de listagem de clientes
+
+            messages.success(request, 'Conta criada com sucesso!')
+
+            return redirect('two_factor:login')  
+
             # Cria a conta associada ao cliente
         
         else:
@@ -112,12 +134,17 @@ def editar_saldo(request, conta_id):
     return render(request, 'clientes/editar_saldo.html', {'contas': contas})
 #@login_required
 def menu(request):
+
     cliente = Cliente.objects.filter(id=request.user.id)
     selected_conta_id = request.GET.get('conta_id')
     if request.method == 'POST':
         conta_id = request.POST.get('conta_id')
         if conta_id:
             request.session['selected_conta_id'] = conta_id  # Salva a conta selecionada na sessão
+
+    if not request.user.is_authenticated:
+        return redirect('two_factor:login')  # Redireciona para a página de login se necessário
+
 
     # Verifica se há uma conta selecionada na sessão
     conta_selecionada = None
@@ -171,7 +198,7 @@ def Buscar_Cep(request):
 #---------------------------------------------------#
     #Cunsultando o CEP
     url = f'https://viacep.com.br/ws/{CEP}/json/'
-    response = requests.get(url)
+    response = request.get(url)
 #---------------------------------------------------#
     #Verificando se o serviço retornou com sucesso
     if response.status_code !=200:
