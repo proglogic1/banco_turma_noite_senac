@@ -40,4 +40,4 @@ class SaldoForm(forms.Form):
 class ClienteAlterarForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nome', 'cpf', 'telefone', 'email']
+        fields = [ 'telefone', 'email']

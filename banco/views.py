@@ -2,23 +2,29 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Cliente, Conta
 from .forms import ClienteForm, ContaForm,ClienteAlterarForm
-import random
+from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe, verificar_cpf_existente, verificar_email
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics,response,status
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.contrib import messages
 
-#@login_required
-def gerar_numero_conta():
-        while True:
-            numero_conta = str(random.randint(10000, 99999))
-            if not Conta.objects.filter(nr_conta=numero_conta).exists():
-                return numero_conta
+
 
  
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
-        
+        cpf =  request.POST.get('cpf')
+        email = request.POST.get('email')
+
+        if verificar_cpf_existente(request,cpf):
+            return render(request, 'clientes/cadastro.html', {'form': form})
+
+        if verificar_email(request,email):
+            return render(request, 'clientes/cadastro.html', {'form': form})
+
         if form.is_valid():
              # Aqui o form já é válido, então podemos criar e salvar o cliente
             cliente = form.save(commit=False)  # Não salva imediatamente, ainda podemos manipular
@@ -35,7 +41,9 @@ def cadastrar_cliente(request):
                 tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
-            return redirect('login')  # Redireciona para uma página de listagem de clientes
+            messages.success(request, 'Conta criada com sucesso!')
+
+            return redirect('two_factor:login')  
             # Cria a conta associada ao cliente
         
         else:
@@ -70,6 +78,8 @@ def cadastrar_conta(request):
             return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
     else:
         form = ContaForm()
+    
+    
 
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
 
@@ -88,8 +98,19 @@ def atualizar_cadastro(request, id):
 @login_required
 def listar_clientes_contas(request):
     # Filtra as contas com base no cliente autenticado
-    contas = Conta.objects.filter(id_cliente=request.user)  # 'request.user' é o cliente autenticado
-    return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
+    cliente = Cliente.objects.get(id=request.user.id)
+    contas = Conta.objects.filter(id_cliente=request.user) 
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
+
+    contas = Conta.objects.filter(id_cliente=cliente) if cliente else []
+
+    context = {
+        
+        'contas': contas,
+        'saldo': saldo_total
+    }
+    return render(request, 'clientes/listar_clientes_contas.html', context)
+    #return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
 
 
 
@@ -111,34 +132,56 @@ def editar_saldo(request, conta_id):
             return redirect('menu')  # Redireciona para o menu após a atualização
 
     return render(request, 'clientes/editar_saldo.html', {'contas': contas})
+
 @login_required
 def menu(request):
-    cliente = Cliente.objects.filter(id=request.user.id)
-    selected_conta_id = request.GET.get('conta_id')
-    if request.method == 'POST':
-        conta_id = request.POST.get('conta_id')
-        if conta_id:
-            request.session['selected_conta_id'] = conta_id  # Salva a conta selecionada na sessão
+    if not request.user.is_authenticated:
+        return redirect('two_factor:login')  # Redireciona para a página de login se necessário
 
-    # Verifica se há uma conta selecionada na sessão
-    conta_selecionada = None
-    if 'selected_conta_id' in request.session:
-        selected_conta_id = Conta.objects.get(id=request.session['selected_conta_id'])
+    try:
+        # Ajuste aqui para relacionar Cliente ao User, se necessário
+        cliente = Cliente.objects.get(id=request.user.id)
+    except Cliente.DoesNotExist:
+        cliente = None
 
-    # Pega todas as contas do cliente
-    contas = Conta.objects.filter(id_cliente=request.user)
-    
-    # Pega o saldo da conta selecionada
-    saldo = selected_conta_id.saldo if selected_conta_id else 0.00
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
+    contas = Conta.objects.filter(id_cliente=cliente) if cliente else []
 
+    # Passa os dados ao template
     context = {
         'cliente': cliente,
         'contas': contas,
-        'selected_conta_id': selected_conta_id,
-        'saldo': saldo
-    
+        'saldo': saldo_total
     }
-    return render(request, 'clientes/menu.html',context)
+    return render(request, 'clientes/menu.html', context)
+
+# def menu(request):
+#     cliente = Cliente.objects.filter(id=request.user.id)
+#     selected_conta_id = request.GET.get('conta_id')
+#     if request.method == 'POST':
+#         conta_id = request.POST.get('conta_id')
+#         if conta_id:
+#             request.session['selected_conta_id'] = conta_id  # Salva a conta selecionada na sessão
+
+#     # Verifica se há uma conta selecionada na sessão
+#     conta_selecionada = None
+#     if 'selected_conta_id' in request.session:
+#         selected_conta_id = Conta.objects.get(id=request.session['selected_conta_id'])
+
+#     # Pega todas as contas do cliente
+#     contas = Conta.objects.filter(id_cliente=request.user)
+    
+#     # Pega o saldo da conta selecionada
+#     saldo = selected_conta_id.saldo if selected_conta_id else 0.00
+
+#     context = {
+#         'cliente': cliente,
+#         'contas': contas,
+#         'selected_conta_id': selected_conta_id,
+#         'saldo': saldo
+    
+#     }
+#     return render(request, 'clientes/menu.html',context)
 
 #API
 # View para listar e criar clientes
@@ -158,3 +201,36 @@ class ClienteCreateAPIView(APIView):
             serializer.save()
             return response(serializer.data, status=status.HTTP_201_CREATED)
         return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def Buscar_Cep(request):
+    CEP = request.query_params.get('cep')
+    
+    if not CEP:
+        return Response({"error": "CEP não informado"}, status=400)
+#---------------------------------------------------#
+    #Validando o formato do CEP, se ele contém 8 digitos
+    if not CEP.isdigit() or len(CEP) !=8: 
+        return Response({"error" : "CEP inválido"}, status=400)
+#---------------------------------------------------#
+    #Cunsultando o CEP
+    url = f'https://viacep.com.br/ws/{CEP}/json/'
+    response = request.get(url)
+#---------------------------------------------------#
+    #Verificando se o serviço retornou com sucesso
+    if response.status_code !=200:
+        return Response({"error": "erro ao consultar o CEP"}, status=500)
+
+    data = response.json()
+#---------------------------------------------------#
+    #Caso o CEP não seja encontrado ou esteja inválido
+    if 'erro' in data:
+        return Response({"error":"CEP não encontrado"}, status=404)
+    return Response(data)
+
+
+def endereco(request):
+    return render(request, 'localizacao/localizacao.html')
+
+    return response(serializer.data, status=status.HTTP_201_CREATED)
+    return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
