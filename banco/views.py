@@ -12,7 +12,6 @@ import requests  # type: ignore
 from datetime import time
 from django.contrib import messages
 
-
 #@login_required
 def gerar_numero_conta():
         while True:
@@ -21,13 +20,9 @@ def gerar_numero_conta():
                 return numero_conta
 
 from django.contrib import messages
-
- 
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
-
-        
 
         cpf =  request.POST.get('cpf')
         email = request.POST.get('email')
@@ -51,7 +46,6 @@ def cadastrar_cliente(request):
                 tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
-
             return redirect('login')  # Redireciona para uma página de listagem de clientes
 
             messages.success(request, 'Conta criada com sucesso!')
@@ -68,7 +62,6 @@ def cadastrar_cliente(request):
     
     return render(request, 'clientes/cadastro.html', {'form': form})
 
-<<<<<<< HEAD
 def transferir_dinheiro(request):
     if request.method == 'POST':
         conta_origem_id = request.POST.get('conta_origem_id')
@@ -96,11 +89,8 @@ def transferir_dinheiro(request):
     contas = Conta.objects.filter(id_cliente=request.user)
     return render(request, 'clientes/transferir_dinheiro.html', {'contas': contas})
 
-
 @login_required
-=======
 #@login_required
->>>>>>> 51a49166a0c8a1db1fc05f5280ff9b4432170908
 def cadastrar_conta(request):
     if request.method == 'POST':
         form = ContaForm(request.POST)
@@ -128,11 +118,7 @@ def cadastrar_conta(request):
             return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
     else:
         form = ContaForm()
-<<<<<<< HEAD
-      
-=======
-    
->>>>>>> 51a49166a0c8a1db1fc05f5280ff9b4432170908
+
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
 #@login_required
 def atualizar_cadastro(request, id):
@@ -151,8 +137,6 @@ def listar_clientes_contas(request):
     # Filtra as contas com base no cliente autenticado
     contas = Conta.objects.filter(id_cliente=request.user)  # 'request.user' é o cliente autenticado
     return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
-
-
 
 #@login_required
 def editar_saldo(request, conta_id):
@@ -304,4 +288,55 @@ def historico_transacoes(request, id_conta):
     conta = Conta.objects.get(id=id_conta)
     movimentos = conta.movimentos.all().order_by('-data')
     return render(request, 'historico.html', {'movimentos':movimentos})
+def historico_transacoes(request):
+    contas = Conta.objects.filter(id_cliente=request.user)
+    return render(request, 'historico.html', {'contas': contas})
+def realizar_deposito(request):
+    if request.method == 'POST':
+        conta_id = request.POST.get('conta')
+        valor = float(request.POST.get('valor'))
+        conta = get_object_or_404(Conta, id_conta=conta_id)
+        if valor <= 0:
+            messages.error(request, "O valor do depósito deve ser maior que zero.")
+            return redirect('menu')
+        if registro_transferencia(valor):
+            messages.error(request, "Não é possível realizar depósitos durante a hora restrita.")
+            return redirect('menu')
+        try:
+            conta.atualizar_saldo(valor, is_credito=True)
+            movimento = Movimento(id_conta=conta)
+            movimento.deposito()
+            messages.success(request, "Depósito realizado com sucesso.")
+            return redirect('menu')
+        except ValueError as e:
+            messages.error(request, f"Erro: {e}")
+        except Exception as e:
+            messages.error(request, f"Erro inesperado: {e}")
+            ender(request, 'deposito.html')
+        return redirect('menu')
+    return render(request, 'deposito.html')
 
+    def realizar_saque(request):
+    if request.method == 'POST':
+        conta_id = request.POST.get('conta')
+        valor = float(request.POST.get('valor'))
+        conta = get_object_or_404(Conta, id_conta=conta_id)
+        if valor <= 0:
+            messages.error(request, "O valor do saque deve ser maior que zero.")
+            return redirect('menu')
+        if registro_transferencia(valor):
+            messages.error(request, "Não é possível realizar saques durante a hora restrita.")
+            return redirect('menu')
+        try:
+            conta.atualizar_saldo(valor, is_credito=False)
+            movimento = Movimento(id_conta=conta)
+            movimento.saque()
+            messages.success(request, "Saque realizado com
+                             sucesso.")
+            return redirect('menu')
+        except ValueError as e:
+            messages.error(request, f"Erro: {e}")
+            pt Exception as e:
+                ages.error(request, f"Erro inesperado: {e}")
+        return redirect('menu')
+    return render(request, 'saque.html')
