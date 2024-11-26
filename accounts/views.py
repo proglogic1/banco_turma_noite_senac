@@ -12,6 +12,7 @@ def login_view(request):
     if request.method == 'POST':
         cpf = request.POST['cpf']
         password = request.POST['password']
+        print(cpf)
         user = authenticate(request, cpf=cpf, password=password)
         if user is not None:
             auth_login(request, user)
