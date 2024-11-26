@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
+from .models import Cliente, Conta
+from .forms import ClienteForm, ContaForm,ClienteAlterarForm, TransacaoForm
+from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe, verificar_cpf_existente, verificar_email
 from .models import Cliente, Conta, Movimento
 from .forms import ClienteForm, ContaForm,ClienteAlterarForm
 from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe, verificar_cpf_existente, verificar_email
@@ -24,6 +27,10 @@ def gerar_numero_conta():
                 return numero_conta
 
 from django.contrib import messages
+from decimal import Decimal
+from django.http import Http404
+
+
 
 
 
@@ -204,6 +211,75 @@ class ClienteCreateAPIView(APIView):
             return response(serializer.data, status=status.HTTP_201_CREATED)
         return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+
+
+
+def transacao_poupanca(request):
+    conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
+    print(conta)
+    if conta is None:
+        messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
+        return redirect('transacao_poupanca')  
+
+    
+    if request.method == "POST":
+        form = TransacaoForm(request.POST)
+        if form.is_valid():
+            
+            valor = Decimal(str(form.cleaned_data['valor']))
+            
+            if 'depositar' in request.POST:
+                conta.saldo += valor 
+                messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
+            elif 'sacar' in request.POST:
+                if conta.saldo >= valor:
+                    conta.saldo -= valor  
+                    messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
+                else:
+                    messages.error(request, "Saldo insuficiente para realizar o saque.")
+            
+           
+            conta.save()
+            return redirect('menu')
+    else:
+        form = TransacaoForm()
+
+    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form})
+
+
+
+
+def transacao_corrente(request):
+    conta = Conta.objects.filter(tipo_conta='Corrente').first() 
+    print(conta)
+    if conta is None:
+        messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
+        return redirect('transacao_corrente')
+    
+    if request.method == "POST":
+        form = TransacaoForm(request.POST)
+        if form.is_valid():
+            # Converter valor para Decimal
+            valor = Decimal(str(form.cleaned_data['valor']))
+            if 'depositar' in request.POST:
+                conta.saldo += valor
+                messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
+            elif 'sacar' in request.POST:
+                if conta.saldo >= valor:
+                    conta.saldo -= valor
+                    messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
+                else:
+                    messages.error(request, "Saldo insuficiente para realizar o saque.")
+            conta.save()
+            return redirect('menu')
+    else:
+        form = TransacaoForm()
+
+    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
+
+
+
 @api_view(['GET'])
 def Buscar_Cep(request):
     CEP = request.query_params.get('cep')
@@ -236,7 +312,9 @@ def endereco(request):
 
     return response(serializer.data, status=status.HTTP_201_CREATED)
     return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
+=======
 #==================================================================#
 #@login_required
 def realizar_transferencia(request):
