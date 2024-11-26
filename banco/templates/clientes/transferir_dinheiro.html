@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card text-center shadow">
+        <div class="card-header bg-primary text-white">
+            <h2>Transferir Dinheiro</h2>
+        </div>
+        <div class="card-body">
+            <h4 class="card-title">Selecione as contas para transferência</h4>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="conta_origem_id" class="form-label">Conta de Origem</label>
+                    <select class="form-control" id="conta_origem_id" name="conta_origem_id" required>
+                        <option value="">Selecione a conta de origem</option>
+                        {% for conta in contas %}
+                            <option value="{{ conta.id }}">{{ conta.nr_conta }} - {{ conta.tipo_conta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="conta_destino_id" class="form-label">Conta de Destino</label>
+                    <select class="form-control" id="conta_destino_id" name="conta_destino_id" required>
+                        <option value="">Selecione a conta de destino</option>
+                        {% for conta in contas %}
+                            <option value="{{ conta.id }}">{{ conta.nr_conta }} - {{ conta.tipo_conta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="valor" class="form-label">Valor a Transferir</label>
+                    <input type="number" class="form-control" id="valor" name="valor" step="0.01" min="0.01" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Transferir</button>
+            </form>
+        </div>
+        <div class="card-footer text-muted">
+            <small>&copy; 2024 Meu Sistema Bancário</small>
+        </div>
+    </div>
+</div>
+{% endblock %}

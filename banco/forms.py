@@ -41,3 +41,15 @@ class ClienteAlterarForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = [ 'telefone', 'email']
+        
+class TransferenciaForm(forms.Form):
+    conta_origem = forms.ModelChoiceField(queryset=Conta.objects.all(), label="Conta de Origem", widget=forms.Select(attrs={'class': 'form-control'}))
+    conta_destino = forms.ModelChoiceField(queryset=Conta.objects.all(), label="Conta de Destino", widget=forms.Select(attrs={'class': 'form-control'}))
+    valor = forms.DecimalField(max_digits=10, decimal_places=2, label="Valor a Transferir", widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
+    # Validação de valor positivo
+    def clean_valor(self):
+        valor = self.cleaned_data.get('valor')
+        if valor <= 0:
+            raise forms.ValidationError("O valor da transferência deve ser positivo.")
+        return valor

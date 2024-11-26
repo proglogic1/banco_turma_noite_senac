@@ -10,8 +10,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.contrib import messages
 
-
-
  
 def cadastrar_cliente(request):
     if request.method == 'POST':
@@ -29,10 +27,7 @@ def cadastrar_cliente(request):
              # Aqui o form já é válido, então podemos criar e salvar o cliente
             cliente = form.save(commit=False)  # Não salva imediatamente, ainda podemos manipular
             cliente.set_password(form.cleaned_data['senha'])  # Define a senha criptografada
-            cliente.save()  # Agora sim, salva o cliente no banco de dados
-            
-                
-            
+            cliente.save()  # Agora sim, salva o cliente no banco de dados            
             numero_conta = gerar_numero_conta()  # Gera um número único de conta
             conta = Conta.objects.create(
                 id_cliente=cliente,
@@ -54,33 +49,63 @@ def cadastrar_cliente(request):
     
     return render(request, 'clientes/cadastro.html', {'form': form})
 
+def transferir_dinheiro(request):
+    if request.method == 'POST':
+        conta_origem_id = request.POST.get('conta_origem_id')
+        conta_destino_id = request.POST.get('conta_destino_id')
+        valor = request.POST.get('valor')
+
+        try:
+            conta_origem = Conta.objects.get(id_conta=conta_origem_id)
+            conta_destino = Conta.objects.get(id_conta=conta_destino_id
+                                              
+                        )
+
+            if conta_origem.saldo >= float(valor):
+                conta_origem.saldo -= float(valor)
+                conta_destino.saldo += float(valor)
+                conta_origem.save()
+                conta_destino.save()
+                messages.success(request, "Transferência realizada com sucesso!")
+                return redirect('listar_clientes_contas')  # Redireciona para a listagem de contas
+            else:
+                messages.error(request, "Saldo insuficiente na conta de origem.")
+        except Conta.DoesNotExist:
+            messages.error(request, "Conta não encontrada.")
+
+    contas = Conta.objects.filter(id_cliente=request.user)
+    return render(request, 'clientes/transferir_dinheiro.html', {'contas': contas})
+
+
 @login_required
 def cadastrar_conta(request):
     if request.method == 'POST':
         form = ContaForm(request.POST)
-        
         if form.is_valid():
-            # Verifica se o cliente já possui uma conta do tipo selecionado
-            tipo_conta = form.cleaned_data['tipo_conta']
-            if Conta.objects.filter(id_cliente=request.user, tipo_conta=tipo_conta).exists():
-                # Se o cliente já tem uma conta do tipo corrente ou poupança, não cria outra
-                form.add_error(None, "Você já tem uma conta desse tipo!")
-                return render(request, 'clientes/cadastrar_conta.html', {'form': form})
-            
-            # Gera um número único de conta
-            numero_conta = gerar_numero_conta()  
-            conta = Conta.objects.create(
-                id_cliente=request.user,
-                nr_conta=numero_conta,
-                nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
-                tipo_conta=tipo_conta  # Captura o tipo de conta do formulário
-            )
+            # numero_conta = gerar_numero_conta()  # Gera um número único de conta
+            # nova_conta = form.save(commit=False)  # Não salva ainda no banco
+            # nova_conta.id_cliente = request.user  # Associa a conta ao cliente autenticado
+            # nova_conta.save()  # Salva a nova conta com o número gerado automaticamente
+            tipo_conta=form.cleaned_data['tipo_conta']
+                      
+            numero_conta = gerar_numero_conta()  # Gera um número único de conta
+            if verificar_conta_existe(numero_conta):
+                 form.add_error('numero_conta', "Essa conta ja existe")
+            elif verificar_tipo_conta_existe(request.user,tipo_conta):
+                 form.add_error('tipo_conta', 'Você já possui uma conta desse tipo.')
+                 #INSERIR POPUP NA TELA INFORMANDO QUE JA EXISTE UMA CONTA DESSE TIPO
+                 
+            else:      
+                conta = Conta.objects.create(
+                        id_cliente=request.user,
+                        nr_conta=numero_conta,
+                        nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
+                        tipo_conta=tipo_conta  # Você pode ajustar para um valor padrão ou capturar do formulário
+                    )
             return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
     else:
         form = ContaForm()
-    
-    
-
+      
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
 
 @login_required
