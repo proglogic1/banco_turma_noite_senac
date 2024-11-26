@@ -138,7 +138,7 @@ AUTH_USER_MODEL = 'banco.Cliente'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = 'two_factor:login'
+LOGIN_URL = 'login'
 
 LOGIN_REDIRECT_URL = 'two_factor:profile'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
