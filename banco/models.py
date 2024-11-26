@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from decimal import Decimal
+from django.db import models
+
 
 # Gerenciador de usuários personalizado
 class CustomUserManager(BaseUserManager):
@@ -62,7 +65,7 @@ class Conta(models.Model):
     nr_agencia = models.CharField(max_length=3)
     dt_cadastro = models.DateTimeField(auto_now_add=True)
     tipo_conta = models.CharField(max_length=10, choices=[('Corrente', 'Corrente'), ('Poupanca', 'Poupanca')])
-    saldo = models.DecimalField(max_digits=5, decimal_places=2)
+    saldo = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
 
     def __str__(self):
         return self.nr_conta

@@ -18,4 +18,7 @@ urlpatterns = [
     
     path('endereco/', endereco, name='Endereco'), # Renderiza a página inicial com o formulário
     path('CEP/', Buscar_Cep, name='CEP'),# Rota para buscar o CEP
+
+    path('poupanca/', transacao_poupanca, name='transacao_poupanca'),
+    path('corrente/', transacao_corrente, name='transacao_corrente'),
 ]

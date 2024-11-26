@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Cliente, Conta
-from .forms import ClienteForm, ContaForm,ClienteAlterarForm
+from .forms import ClienteForm, ContaForm,ClienteAlterarForm, TransacaoForm
 from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe, verificar_cpf_existente, verificar_email
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics,response,status
@@ -248,11 +248,14 @@ def transacao_poupanca(request):
 
 
 
-@login_required
-def transacao_corrente(request):
-   
-    conta = get_object_or_404(Conta, tipo_conta='corrente')
 
+def transacao_corrente(request):
+    conta = Conta.objects.filter(tipo_conta='Corrente').first() 
+    print(conta)
+    if conta is None:
+        messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
+        return redirect('transacao_corrente')
+    
     if request.method == "POST":
         form = TransacaoForm(request.POST)
         if form.is_valid():
@@ -268,11 +271,11 @@ def transacao_corrente(request):
                 else:
                     messages.error(request, "Saldo insuficiente para realizar o saque.")
             conta.save()
-            return redirect('transacao_corrente')
+            return redirect('menu')
     else:
         form = TransacaoForm()
 
-    return render(request, 'clientes/transacao.html', {'conta': conta, 'form': form})
+    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
 
 
 
