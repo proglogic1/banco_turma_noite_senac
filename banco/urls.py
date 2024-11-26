@@ -18,4 +18,6 @@ urlpatterns = [
     
     path('endereco/', endereco, name='Endereco'), # Renderiza a página inicial com o formulário
     path('CEP/', Buscar_Cep, name='CEP'),# Rota para buscar o CEP
+    
+    path('transferencia/', realizar_transferencia, name='realizar_transferencia'),
 ]
