@@ -166,6 +166,7 @@ def menu(request):
     }
     return render(request, 'clientes/menu.html',context)
 
+#==================================================================#
 #API
 # View para listar e criar clientes
 class ClienteListCreateView(generics.ListCreateAPIView):
@@ -184,7 +185,8 @@ class ClienteCreateAPIView(APIView):
             serializer.save()
             return response(serializer.data, status=status.HTTP_201_CREATED)
         return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+#==================================================================#
 @api_view(['GET'])
 def Buscar_Cep(request):
     CEP = request.query_params.get('cep')
@@ -211,7 +213,7 @@ def Buscar_Cep(request):
         return Response({"error":"CEP não encontrado"}, status=404)
     return Response(data)
 
-
+#==================================================================#
 def endereco(request):
     return render(request, 'localizacao/localizacao.html')
 
@@ -259,9 +261,18 @@ def registro_transferencia(valor):
     hora_atual = time().now().time()
     hora_restrita = time(22,0) <+ hora_atual or hora_atual <=time(6,0)
     return not (hora_restrita and valor > 1000)
-        
+
+#------------------------------------------------------------------#        
 def historico_transacoes(request, id_conta):
     conta = Conta.objects.get(id=id_conta)
     movimentos = conta.movimentos.all().order_by('-data')
     return render(request, 'historico.html', {'movimentos':movimentos})
+
+
+
+
+
+
+
+
 
