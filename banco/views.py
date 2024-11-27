@@ -21,6 +21,7 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 
 
 
+
 def gerar_numero_conta():
         while True:
             numero_conta = str(random.randint(10000, 99999))
