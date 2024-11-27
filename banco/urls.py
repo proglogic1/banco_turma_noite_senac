@@ -1,6 +1,7 @@
 from django.urls import path,include
 from django.contrib.auth import views as auth_views
-from .views import * 
+from .views import *
+from .views import transacao_poupanca
 
 
 urlpatterns = [
@@ -34,4 +35,4 @@ urlpatterns = [
     path('reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
    
 ]
-]
+
