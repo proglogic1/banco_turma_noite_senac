@@ -75,8 +75,6 @@ class Movimento(models.Model):
     tipo_movimento = models.CharField(max_length=10, choices=[('Credito', 'Credito'), ('Debito', 'Debito')])
     valor = models.FloatField()
     data = models.DateTimeField(auto_now_add=True)
-<<<<<<< Updated upstream
-=======
     conta_destinatario = models.ForeignKey(Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='Transferencias_Recebidas')
     
     def __str__(self):
@@ -120,6 +118,6 @@ class Movimento(models.Model):
 
 
 
->>>>>>> Stashed changes
+
 
 #==================================================#
