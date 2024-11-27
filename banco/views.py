@@ -5,18 +5,22 @@ from .forms import ClienteForm, ContaForm,ClienteAlterarForm, TransacaoForm
 from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe, verificar_cpf_existente, verificar_email
 from .models import Cliente, Conta, Movimento
 from .forms import ClienteForm, ContaForm,ClienteAlterarForm
+from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe, verificar_cpf_existente, verificar_email
 import random
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics,response,status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-import requests  # type: ignore
+import requests  
 from datetime import time
 from django.contrib import messages
+from django_otp.decorators import otp_required
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 
-#@login_required
+
+
 def gerar_numero_conta():
         while True:
             numero_conta = str(random.randint(10000, 99999))
@@ -26,9 +30,6 @@ def gerar_numero_conta():
 from django.contrib import messages
 from decimal import Decimal
 from django.http import Http404
-
-
-
 
 
  
@@ -63,12 +64,14 @@ def cadastrar_cliente(request):
                 tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
+            
+            messages.success(request, 'Conta criada com sucesso!')
+
+        
 
             return redirect('login')  # Redireciona para uma página de listagem de clientes
 
-            messages.success(request, 'Conta criada com sucesso!')
-
-            return redirect('two_factor:login')  
+           
 
             # Cria a conta associada ao cliente
         
@@ -80,28 +83,40 @@ def cadastrar_cliente(request):
     
     return render(request, 'clientes/cadastro.html', {'form': form})
 
-#@login_required
+@otp_required
+@login_required
 def cadastrar_conta(request):
+
     if request.method == 'POST':
         form = ContaForm(request.POST)
         if form.is_valid():
-            # numero_conta = gerar_numero_conta()  # Gera um número único de conta
-            # nova_conta = form.save(commit=False)  # Não salva ainda no banco
-            # nova_conta.id_cliente = request.user  # Associa a conta ao cliente autenticado
-            # nova_conta.save()  # Salva a nova conta com o número gerado automaticamente
             numero_conta = gerar_numero_conta()  # Gera um número único de conta
             conta = Conta.objects.create(
                 id_cliente=request.user,
                 nr_conta=numero_conta,
                 nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
-                tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
+                tipo_conta=form.cleaned_data['tipo_conta']  # Captura o tipo de conta do formulário
             )
-            return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
+            
+            # Mensagem de sucesso
+            messages.success(request, 'Conta cadastrada com sucesso.')
+
+            # Redireciona para a página de listagem
+            response = redirect('listar_clientes_contas')
+
+            
+
+            return response
     else:
         form = ContaForm()
 
+        
+
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
-#@login_required
+
+
+ 
+@login_required
 def atualizar_cadastro(request, id):
     cliente = get_object_or_404(Cliente, id=id)
     if request.method == 'POST':
@@ -113,15 +128,15 @@ def atualizar_cadastro(request, id):
         form = ClienteAlterarForm(instance=cliente)
     return render(request, 'clientes/atualizar_cadastro.html', {'form': form})
 
-#@login_required
+@login_required
 def listar_clientes_contas(request):
     # Filtra as contas com base no cliente autenticado
     contas = Conta.objects.filter(id_cliente=request.user)  # 'request.user' é o cliente autenticado
     return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
 
 
-
-#@login_required
+@otp_required
+@login_required
 def editar_saldo(request, conta_id):
     # Recupera todas as contas do cliente autenticado
     contas = Conta.objects.filter(id_cliente=request.user)
@@ -139,39 +154,49 @@ def editar_saldo(request, conta_id):
             return redirect('menu')  # Redireciona para o menu após a atualização
 
     return render(request, 'clientes/editar_saldo.html', {'contas': contas})
-#@login_required
+
+
+
+
+@login_required
 def menu(request):
+    # Desativa a verificação TOTP (remove a flag de verificação TOTP da sessão)
+    request.session.pop('totp_totpdevice', None)  # Remover o estado de verificação OTP na sessão
+    
+    device = TOTPDevice.objects.filter(user=request.user).first()  # Busca o dispositivo TOTP
+    
+    if device:
+        device.is_active = False  # Desativa o dispositivo sem deletá-lo
+        device.save()  # Salva as alterações
 
     cliente = Cliente.objects.filter(id=request.user.id)
-    selected_conta_id = request.GET.get('conta_id')
-    if request.method == 'POST':
-        conta_id = request.POST.get('conta_id')
-        if conta_id:
-            request.session['selected_conta_id'] = conta_id  # Salva a conta selecionada na sessão
 
+    # Verifica se o usuário está autenticado
     if not request.user.is_authenticated:
         return redirect('two_factor:login')  # Redireciona para a página de login se necessário
-
 
     # Verifica se há uma conta selecionada na sessão
     conta_selecionada = None
     if 'selected_conta_id' in request.session:
-        selected_conta_id = Conta.objects.get(id=request.session['selected_conta_id'])
+        conta_selecionada = Conta.objects.get(id=request.session['selected_conta_id'])
 
     # Pega todas as contas do cliente
     contas = Conta.objects.filter(id_cliente=request.user)
     
     # Pega o saldo da conta selecionada
-    saldo = selected_conta_id.saldo if selected_conta_id else 0.00
+    saldo = conta_selecionada.saldo if conta_selecionada else 0.00
 
     context = {
         'cliente': cliente,
         'contas': contas,
-        'selected_conta_id': selected_conta_id,
+        'selected_conta_id': conta_selecionada.id if conta_selecionada else None,
         'saldo': saldo
-    
     }
-    return render(request, 'clientes/menu.html',context)
+
+    return render(request, 'clientes/menu.html', context)
+
+
+
 
 #API
 # View para listar e criar clientes
@@ -295,7 +320,7 @@ def endereco(request):
     return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-=======
+
 #==================================================================#
 #@login_required
 def realizar_transferencia(request):
@@ -343,3 +368,5 @@ def historico_transacoes(request, id_conta):
     movimentos = conta.movimentos.all().order_by('-data')
     return render(request, 'historico.html', {'movimentos':movimentos})
 
+
+#==================================================================#
