@@ -85,12 +85,18 @@ class Conta(models.Model):
 class Movimento(models.Model):
     id_movimento = models.AutoField(primary_key=True)
     id_conta = models.ForeignKey(Conta, on_delete=models.CASCADE, related_name='movimentos')
-    tipo_movimento = models.CharField(max_length=13, choices=[('Credito', 'Credito'), ('Debito', 'Debito'), ('Transferencia', 'Transferência')])
+    tipo_movimento = models.CharField(max_length=13, choices=[
+        ('Credito', 'Credito'),
+        ('Debito', 'Debito'),
+        ('Transferencia', 'Transferência')
+    ])
     valor = models.FloatField()
-    saldo_movimento = models.FloatField() #Ira rastrear o saldo depois do movimento/transação
+    saldo_movimento = models.FloatField()  # Saldo atualizado após o movimento
     data = models.DateTimeField(auto_now_add=True)
-    conta_destinatario = models.ForeignKey(Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='Transferencias_Recebidas')
-    
+    conta_destinatario = models.ForeignKey(
+        Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='transferencias_recebidas'
+    )
+
     def __str__(self):
         return f"{self.tipo_movimento} - {self.valor} ({self.data})"
     

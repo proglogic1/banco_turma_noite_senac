@@ -20,4 +20,7 @@ urlpatterns = [
     path('CEP/', Buscar_Cep, name='CEP'),# Rota para buscar o CEP
     
     path('transferencia/', realizar_transferencia, name='realizar_transferencia'),
+    path('historico/<int:id_conta>/', historico_transacoes, name='historico_transacoes'),
+    path('saque/<int:conta_id>/', realizar_saque, name='realizar_saque',)
+    path('deposito/<int:conta_id>/', realizar_deposito, name='realizar_deposito'),
 ]
