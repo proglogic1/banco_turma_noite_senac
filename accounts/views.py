@@ -41,6 +41,7 @@ def login_view(request):
             refresh = RefreshToken.for_user(user)  # Gerar o refresh token
             access_token = refresh.access_token  # Gerar o access token
             print(access_token)
+            
             # Limpar as tentativas de login após sucesso
             cache.delete(tentativas_senha)
 
