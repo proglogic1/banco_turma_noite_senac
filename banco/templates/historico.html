@@ -1,0 +1,24 @@
+<h1>Histórico de Transações - Conta {{ conta.nr_conta }}</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Saldo Após Movimento</th>
+            <th>Conta Destinatário</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movimento in movimentos %}
+            <tr>
+                <td>{{ movimento.data|date:"d/m/Y H:i" }}</td>
+                <td>{{ movimento.tipo_movimento }}</td>
+                <td>{{ movimento.valor }}</td>
+                <td>{{ movimento.saldo_movimento }}</td>
+                <td>{{ movimento.conta_destinatario.nr_conta if movimento.conta_destinatario else "N/A" }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
