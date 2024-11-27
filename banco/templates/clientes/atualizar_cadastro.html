@@ -58,14 +58,16 @@
 
 </style>
 <body>
-    <h1>Atualizar Cadastro</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Salvar</button>
-</form>
-<a href="{% url 'menu' %}">Cancelar</a>
-<a href="{% url 'two_factor:profile' %}">Verificação de duas etapas</a>
+    <div>
+        <h1>Atualizar Cadastro</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Salvar</button>
+        </form>
+        <a href="{% url 'menu' %}">Cancelar</a>
+        <a href="{% url 'two_factor:profile' %}">verificação de duas etapas</a>
+    </div>
 </body>
 {% endblock %}
 </html>

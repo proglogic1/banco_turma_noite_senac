@@ -16,7 +16,8 @@ import requests
 from datetime import time
 from django.contrib import messages
 from django_otp.decorators import otp_required
-from django_otp.forms import OTPAuthenticationForm
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
 
 
 
@@ -29,9 +30,6 @@ def gerar_numero_conta():
 from django.contrib import messages
 from decimal import Decimal
 from django.http import Http404
-
-
-
 
 
  
@@ -66,12 +64,14 @@ def cadastrar_cliente(request):
                 tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
+            
+            messages.success(request, 'Conta criada com sucesso!')
+
+        
 
             return redirect('login')  # Redireciona para uma página de listagem de clientes
 
-            messages.success(request, 'Conta criada com sucesso!')
-
-            return redirect('two_factor:login')  
+           
 
             # Cria a conta associada ao cliente
         
@@ -110,8 +110,7 @@ def cadastrar_conta(request):
     else:
         form = ContaForm()
 
-        # Remove o status OTP ao renderizar a página
-        request.session.pop('otp_device', None) 
+        
 
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
 
@@ -156,18 +155,23 @@ def editar_saldo(request, conta_id):
 
     return render(request, 'clientes/editar_saldo.html', {'contas': contas})
 
+
+
+
 @login_required
 def menu(request):
-    cliente = Cliente.objects.filter(id=request.user.id)
+    # Desativa a verificação TOTP (remove a flag de verificação TOTP da sessão)
+    request.session.pop('totp_totpdevice', None)  # Remover o estado de verificação OTP na sessão
     
-    request.session.pop('has_passed_2fa', None)
+    device = TOTPDevice.objects.filter(user=request.user).first()  # Busca o dispositivo TOTP
+    
+    if device:
+        device.is_active = False  # Desativa o dispositivo sem deletá-lo
+        device.save()  # Salva as alterações
 
+    cliente = Cliente.objects.filter(id=request.user.id)
 
-    if request.method == 'POST':
-        conta_id = request.POST.get('conta_id')
-        if conta_id:
-            request.session['selected_conta_id'] = conta_id  # Salva a conta selecionada na sessão
-
+    # Verifica se o usuário está autenticado
     if not request.user.is_authenticated:
         return redirect('two_factor:login')  # Redireciona para a página de login se necessário
 
@@ -190,6 +194,8 @@ def menu(request):
     }
 
     return render(request, 'clientes/menu.html', context)
+
+
 
 
 #API
@@ -314,7 +320,7 @@ def endereco(request):
     return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-=======
+
 #==================================================================#
 #@login_required
 def realizar_transferencia(request):
