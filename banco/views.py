@@ -17,6 +17,9 @@ from datetime import time
 from django.contrib import messages
 from django_otp.decorators import otp_required
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+
 
 
 
@@ -201,15 +204,19 @@ def menu(request):
 #==================================================================#
 #API
 # View para listar e criar clientes
-class ClienteListCreateView(generics.ListCreateAPIView):
+class ClienteViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
 
 # View para listar e criar contas
-class ContaListCreateView(generics.ListCreateAPIView):
+class ContaViewSet(viewsets.ModelViewSet):
     queryset = Conta.objects.select_related('id_cliente')  # Otimiza a consulta para incluir dados do cliente
     serializer_class = ContaSerializer
+    permission_classes = [IsAuthenticated]
 
+    
+# possivel causa de conflito
 class ClienteCreateAPIView(APIView):
     def post(self, request):
         serializer = ClienteSerializer(data=request.data)
@@ -217,6 +224,7 @@ class ClienteCreateAPIView(APIView):
             serializer.save()
             return response(serializer.data, status=status.HTTP_201_CREATED)
         return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 #==================================================================#
