@@ -75,5 +75,51 @@ class Movimento(models.Model):
     tipo_movimento = models.CharField(max_length=10, choices=[('Credito', 'Credito'), ('Debito', 'Debito')])
     valor = models.FloatField()
     data = models.DateTimeField(auto_now_add=True)
+<<<<<<< Updated upstream
+=======
+    conta_destinatario = models.ForeignKey(Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='Transferencias_Recebidas')
+    
+    def __str__(self):
+        return f"{self.tipo_movimento} - {self.valor} ({self.data})"
+    
+    def transferencia(self, conta_destinatario, valor):
+        if not self.verificar_saldo(valor):
+            raise ValueError("Saldo insuficiente para a transferência.")
+    
+        #Atualiza saldos
+        self.atualizar_saldo(valor, is_credito=False)
+        conta_destinatario.atualizar_saldo(valor, is_credito=True)
+        
+        #Registrar Movimento
+        Movimento.objects.create(
+            id_conta=self,
+            tipo_movimento='Transferencia',
+            valor=valor,
+            saldo_movimento=self.saldo,
+            conta_destinatario=conta_destinatario,
+        )
+        Movimento.objects.create(
+            id_conta=conta_destinatario,
+            tipo_movimento= 'Credito',
+            valor=valor,
+            saldo_movimento=conta_destinatario.saldo,
+        )
+        Movimento.objects.create(
+            id_conta=conta_destinatario,
+            tipo_movimento='Debito',
+            valor=valor,
+            saldo_movimento=conta_destinatario.saldo,
+        )
+
+
+
+
+
+
+
+
+
+
+>>>>>>> Stashed changes
 
 #==================================================#
