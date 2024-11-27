@@ -33,4 +33,4 @@ def verificar_email(request,email):
         messages.error(request,'Já existe uma conta com esse E-mail')
         return True #existe outra conta com esse e-mail
     return False #não existe nenhuma conta com esse e-mail
-        
+

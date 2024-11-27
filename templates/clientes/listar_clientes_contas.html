@@ -1,44 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Clientes e Contas</title>
-</head>
+{% extends 'base.html' %}
+
 {% block content %}
 <body>
-    <h1>Lista de Clientes e Contas</h1>
+    <div class="container mt-5">
+        <header class="mb-4 text-center">
+            <h1 class="display-4">Lista de Contas</h1>
+        </header>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Cliente ID</th>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>CPF</th>
-                <th>Email</th>
-                <th>Conta ID</th>
-                <th>Número da Conta</th>
-                <th>Agência</th>
-                <th>Tipo de Conta</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for conta in contas %}
-                <tr>
-                    <td>{{ conta.id_cliente.id }}</td>
-                    <td>{{ conta.id_cliente.nome }}</td>
-                    <td>{{ conta.id_cliente.telefone }}</td>
-                    <td>{{ conta.id_cliente.cpf }}</td>
-                    <td>{{ conta.id_cliente.email }}</td>
-                    <td>{{ conta.id_conta }}</td>
-                    <td>{{ conta.nr_conta }}</td>
-                    <td>{{ conta.nr_agencia }}</td>
-                    <td>{{ conta.tipo_conta }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Número da Conta</th>
+                        <th scope="col">Agência</th>
+                        <th scope="col">Tipo de Conta</th>
+                        <th scope="col">Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conta in contas %}
+                        <tr>
+                            <td>{{ conta.nr_conta }}</td>
+                            <td>{{ conta.nr_agencia }}</td>
+                            <td>{{ conta.tipo_conta }}</td>
+                            <td>R$ {{ conta.saldo|floatformat:2 }}</td>
+                            
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
 </body>
 {% endblock %}
-</html>
+
