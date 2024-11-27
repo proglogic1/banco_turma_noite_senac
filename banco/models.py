@@ -70,12 +70,12 @@ class Conta(models.Model):
 
     def __str__(self):
         return self.nr_conta
-    
-    #Metodo para verificar o saldo
+
+    # Método para verificar saldo
     def verificar_saldo(self, quant):
         return self.saldo >= quant
     
-    #Método para atualizar o saldo
+    # Método para atualizar saldo
     def atualizar_saldo(self, quant, is_credito=True):
         if is_credito:
             self.saldo += quant
@@ -83,51 +83,79 @@ class Conta(models.Model):
             self.saldo -= quant
         self.save()
 
+    # Sobrescreve o método save para validar contas já existentes
+    def save(self, *args, **kwargs):
+        # Verifica se já existe uma conta do tipo escolhido para o cliente
+        if Conta.objects.filter(id_cliente=self.id_cliente, tipo_conta=self.tipo_conta).exists():
+            raise ValueError(f"Você já possui uma conta {self.tipo_conta} registrada.")
+        
+        # Verifica se o cliente já tem uma conta do tipo oposto
+        tipo_oposto = 'Corrente' if self.tipo_conta == 'Poupanca' else 'Poupanca'
+        if Conta.objects.filter(id_cliente=self.id_cliente, tipo_conta=tipo_oposto).exists():
+            raise ValueError(f"Você já possui uma conta {tipo_oposto} registrada.")
+        
+        super().save(*args, **kwargs)  # Chama o método save do modelo pai
+
+
+    # Método para verificar saldo
+    def verificar_saldo(self, quant):
+        return self.saldo >= quant
+    
+    # Método para atualizar saldo
+    def atualizar_saldo(self, quant, is_credito=True):
+        if is_credito:
+            self.saldo += quant
+        else:
+            self.saldo -= quant
+        self.save()
+
+
 # #==================================================#
 
 class Movimento(models.Model):
     id_movimento = models.AutoField(primary_key=True)
     id_conta = models.ForeignKey(Conta, on_delete=models.CASCADE, related_name='movimentos')
     tipo_movimento = models.CharField(max_length=13, choices=[('Credito', 'Credito'), ('Debito', 'Debito'), ('Transferencia', 'Transferência')])
-    valor = models.FloatField()
-    saldo_movimento = models.FloatField() #Ira rastrear o saldo depois do movimento/transação
+    valor = models.DecimalField(max_digits=10, decimal_places=2)  # Usando DecimalField em vez de FloatField
+    saldo_movimento = models.DecimalField(max_digits=10, decimal_places=2)  # Usando DecimalField aqui também
     data = models.DateTimeField(auto_now_add=True)
     conta_destinatario = models.ForeignKey(Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='Transferencias_Recebidas')
     
     def __str__(self):
         return f"{self.tipo_movimento} - {self.valor} ({self.data})"
+
     
-    def transferencia(self, conta_destinatario, valor):
-        if not self.verificar_saldo(valor):
-            raise ValueError("Saldo insuficiente para a transferência.")
+def realizar_transferencia(request):
+    if request.method == 'POST':
+        conta_origem_id = request.POST.get('conta_origem')
+        conta_destino_id = request.POST.get('conta_destino')
+        valor = Decimal(request.POST.get('valor'))  # Converte para Decimal
+
+        try:
+            conta_origem = get_object_or_404(Conta, id_conta=conta_origem_id)
+            conta_destino = get_object_or_404(Conta, id_conta=conta_destino_id)
+
+            if conta_origem.saldo >= valor:
+                conta_origem.saldo -= valor  # Ambos agora são Decimais
+                conta_destino.saldo += valor  # Ambos agora são Decimais
+                conta_origem.save()
+                conta_destino.save()
+                
+                # Registrando o movimento
+                Movimento.objects.create(
+                    id_conta=conta_origem,
+                    tipo_movimento='Transferencia',
+                    valor=valor,
+                    saldo_movimento=conta_origem.saldo,
+                    conta_destinatario=conta_destino
+                )
+                
+                messages.success(request, "Transferência realizada com sucesso!")
+                return redirect('listar_contas')  # Redireciona para a página de listagem de contas
+            else:
+                messages.error(request, "Saldo insuficiente na conta de origem.")
+        except Conta.DoesNotExist:
+            messages.error(request, "Conta não encontrada.")
     
-        #Atualiza saldos
-        self.atualizar_saldo(valor, is_credito=False)
-        conta_destinatario.atualizar_saldo(valor, is_credito=True)
-        
-        #Registrar Movimento
-        Movimento.objects.create(
-            id_conta=self,
-            tipo_movimento='Transferencia',
-            valor=valor,
-            saldo_movimento=self.saldo,
-            conta_destinatario=conta_destinatario,
-        )
-        Movimento.objects.create(
-            id_conta=conta_destinatario,
-            tipo_movimento= 'Credito',
-            valor=valor,
-            saldo_movimento=conta_destinatario.saldo,
-        )
-
-
-
-
-
-
-
-
-
-
-
-
+    contas = Conta.objects.filter(id_cliente=request.user)
+    return render(request, 'clientes/transferir_dinheiro.html', {'contas': contas})

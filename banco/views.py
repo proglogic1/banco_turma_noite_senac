@@ -80,27 +80,38 @@ def cadastrar_cliente(request):
     
     return render(request, 'clientes/cadastro.html', {'form': form})
 
-#@login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import ContaForm
+
+@login_required
 def cadastrar_conta(request):
     if request.method == 'POST':
         form = ContaForm(request.POST)
         if form.is_valid():
-            # numero_conta = gerar_numero_conta()  # Gera um número único de conta
-            # nova_conta = form.save(commit=False)  # Não salva ainda no banco
-            # nova_conta.id_cliente = request.user  # Associa a conta ao cliente autenticado
-            # nova_conta.save()  # Salva a nova conta com o número gerado automaticamente
+            tipo_conta = form.cleaned_data['tipo_conta']
             numero_conta = gerar_numero_conta()  # Gera um número único de conta
-            conta = Conta.objects.create(
-                id_cliente=request.user,
-                nr_conta=numero_conta,
-                nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
-                tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
-            )
-            return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
+
+            try:
+                # Tenta salvar a conta
+                conta = Conta.objects.create(
+                    id_cliente=request.user,
+                    nr_conta=numero_conta,
+                    nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
+                    tipo_conta=tipo_conta
+                )
+                messages.success(request, f"Conta {tipo_conta} criada com sucesso!")
+                return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
+            except ValueError as e:
+                # Se houver um ValueError (ex: contas conflitantes), mostra uma mensagem de erro
+                messages.error(request, str(e))
+        else:
+            messages.error(request, "O formulário contém erros.")
     else:
         form = ContaForm()
 
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
+
 #@login_required
 def atualizar_cadastro(request, id):
     cliente = get_object_or_404(Cliente, id=id)
@@ -295,7 +306,6 @@ def endereco(request):
     return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-=======
 #==================================================================#
 #@login_required
 def realizar_transferencia(request):

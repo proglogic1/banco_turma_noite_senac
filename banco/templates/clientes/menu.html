@@ -1,61 +1,58 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
 <div class="container mt-5">
-    
     <div class="card text-center shadow">
         <div class="card-header bg-primary text-white">
             <!-- Exibe o nome do cliente logado -->
-            <h2>Bem-vindo, {{user.nome}}</h2>
+            <h2>Bem-vindo, {{ user.nome }}</h2>
         </div>
         <div class="card-body">
             <h4 class="card-title text-primary">O que você gostaria de fazer hoje?</h4>
+            
+            <!-- Botões de ação -->
             <div class="row mt-4">
-                <div class="col-md-4">
+                <div class="col-md-4 mb-3">
                     <a href="{% url 'cadastrar_conta' %}" class="btn btn-outline-primary w-100 p-3">
                         <i class="bi bi-wallet2"></i> Criar Conta
                     </a>
                 </div>
-                <div class="col-md-4">
-                    <a href="{% url 'listar_clientes_contas' %}" class="btn btn-outline-success w-100 p-3">
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'tra' %}" class="btn btn-outline-success w-100 p-3">
                         <i class="bi bi-currency-exchange"></i> Transferir Dinheiro
                     </a>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 mb-3">
                     <a href="{% url 'listar_clientes_contas' %}" class="btn btn-outline-info w-100 p-3">
                         <i class="bi bi-file-text"></i> Consultar Extrato
                     </a>
                 </div>
             </div>
             <div class="row mt-4">
-                <div class="col-md-4">
+                <div class="col-md-4 mb-3">
                     <a href="{% url 'atualizar_cadastro' user.id %}" class="btn btn-outline-warning w-100 p-3">
                         <i class="bi bi-person-badge"></i> Atualizar Cadastro
                     </a>
                 </div>
-
             </div>
         </div>
         
-        
-        <footer style="background-color: #333; color: #fff; padding: 10px 0;">
-            <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div style="flex: 1; text-align: left;">
-                    <p style="margin: 0;">GitHub: <a href="https://github.com/carloscelestino1/banco_turma_noite_senac" style="color: #fff; text-decoration: underline;" target="_blank">https://github.com/</a></p>
-                </div>
-                <div style="flex: 1; text-align: center;">
-                    <p style="margin: 0;">Trello: <a href="https://trello.com/b/cCVMHBfh/sistema-bancario" style="color: #fff; text-decoration: underline;" target="_blank">https://trello.com/pt-BR</a></p>
-                </div>
-                <div style="flex: 1; text-align: right;">
-                    <p style="margin: 0;">Contato: <a href="mailto:sistemabancario@gmail.com" style="color: #fff; text-decoration: underline;">sistemabancario@gmail.com</a></p>
+        <!-- Rodapé -->
+        <footer class="bg-dark text-white py-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 mb-2 mb-md-0 text-left">
+                        <p style="margin: 0;">GitHub: <a href="https://github.com/carloscelestino1/banco_turma_noite_senac" style="color: #fff; text-decoration: underline;" target="_blank">https://github.com/</a></p>
+                    </div>
+                    <div class="col-md-4 mb-2 mb-md-0 text-center">
+                        <p style="margin: 0;">Trello: <a href="https://trello.com/b/cCVMHBfh/sistema-bancario" style="color: #fff; text-decoration: underline;" target="_blank">https://trello.com/pt-BR</a></p>
+                    </div>
+                    <div class="col-md-4 mb-2 mb-md-0 text-right">
+                        <p style="margin: 0;">Contato: <a href="mailto:sistemabancario@gmail.com" style="color: #fff; text-decoration: underline;">sistemabancario@gmail.com</a></p>
+                    </div>
                 </div>
             </div>
         </footer>
-        
-        {% comment %} <div class="card-footer text-muted">
-            <small>&copy; 2024 Meu Sistema Bancário</small>
-        </div> {% endcomment %}
     </div>
 </div>
 {% endblock %}
