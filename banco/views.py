@@ -201,6 +201,7 @@ def menu(request):
 
 
 
+#==================================================================#
 #API
 # View para listar e criar clientes
 class ClienteViewSet(viewsets.ModelViewSet):
@@ -214,8 +215,19 @@ class ContaViewSet(viewsets.ModelViewSet):
     serializer_class = ContaSerializer
     permission_classes = [IsAuthenticated]
 
+    
+# possivel causa de conflito
+class ClienteCreateAPIView(APIView):
+    def post(self, request):
+        serializer = ClienteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return response(serializer.data, status=status.HTTP_201_CREATED)
+        return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+#==================================================================#
 
 
 def transacao_poupanca(request):
@@ -283,6 +295,7 @@ def transacao_corrente(request):
 
 
 
+
 @api_view(['GET'])
 def Buscar_Cep(request):
     CEP = request.query_params.get('cep')
@@ -309,7 +322,7 @@ def Buscar_Cep(request):
         return Response({"error":"CEP não encontrado"}, status=404)
     return Response(data)
 
-
+#==================================================================#
 def endereco(request):
     return render(request, 'localizacao/localizacao.html')
 
@@ -326,44 +339,97 @@ def realizar_transferencia(request):
         conta_destino_id = request.POST.get('conta_destino')
         valor = float(request.POST.get('valor'))
 
-        #Caso de erro
-        conta_origem = get_object_or_404(Conta, id_conta = conta_origem_id, id_cliente=request.user)
+        # Obter as contas
+        conta_origem = get_object_or_404(Conta, id_conta=conta_origem_id, id_cliente=request.user)
         conta_destino = get_object_or_404(Conta, id_conta=conta_destino_id)
 
-        #Verificando se a conta de origem ossui o saldo para realizar a transferência
+        # Verificar saldo suficiente na conta de origem
         if not conta_origem.verificar_saldo(valor):
-                messages.error(request, "Saldo insuficiente para a transferência.")
-                return redirect('menu')
+            messages.error(request, "Saldo insuficiente para a transferência.")
+            return redirect('menu')
 
-        #Realizando a transferência usando o metodo no models
         try:
+            # Atualizar saldos
             conta_origem.atualizar_saldo(valor, is_credito=False)
             conta_destino.atualizar_saldo(valor, is_credito=True)
 
-            #Chamando o models
-            movimento = Movimento(id_conta=conta_origem)
-            movimento.transferencia(conta_destinatario=conta_destino_id)
-            
+            # Registrar movimentos
+            Movimento.objects.create(
+                id_conta=conta_origem,
+                tipo_movimento='Debito',
+                valor=valor,
+                saldo_movimento=conta_origem.saldo,
+                conta_destinatario=conta_destino,
+            )
+            Movimento.objects.create(
+                id_conta=conta_destino,
+                tipo_movimento='Credito',
+                valor=valor,
+                saldo_movimento=conta_destino.saldo,
+            )
+
             messages.success(request, "Transferência realizada com sucesso.")
             return redirect('menu')
 
-        except ValueError as e:
-            messages.error(request, f"Erro: {e}")
         except Exception as e:
-            messages.error(request, f"Erro inesperado: {e}")
+            messages.error(request, f"Erro ao realizar transferência: {e}")
     
     contas = Conta.objects.filter(id_cliente=request.user)
     return render(request, 'clientes/transferencia.html', {'contas': contas})
+
+#==================================================================#
+def realizar_saque(request, conta_id):
+    if request.method == 'POST':
+        valor = float(request.POST.get('valor'))
+        conta = get_object_or_404(Conta,id_conta=conta_id, id_cliente=request.user)
+        
+        if not conta.verificar_saldo(valor):
+            messages.error(request,"Saldo insuficiente para o saque.")
+            return redirect('menu')
+        
+        #Atualizar saldo e registrar o movimento
+        conta.atualizar_saldo(valor, is_credito=False)
+        Movimento.objects.create(
+            id_conta=conta,
+            tipo_movimento='Debito',
+            valor=valor,
+            saldo_movimento=conta.saldo
+        )
+        messages.success(request,"Saque realizado com sucesso.")
+        return redirect('menu')
+    
+#------------------------------------------------------------------#
+def realizar_deposito(request, conta_id):
+    if request.method == 'POST':
+        valor = float(request.POST.get('valor'))
+        conta = get_object_or_404(Conta, id_conta=conta_id, id_cliente=request.user)    
+               
+        #Atualizar saldo e registrar o movimento
+        conta.atualizar_saldo(valor, is_credito=True)
+        Movimento.objects.create(
+            id_conta=conta,
+            tipo_movimento='Credito',
+            valor=valor,
+            saldo_movimento=conta.saldo
+        )
+        messages.success(request, "Depósito realizado com sucesso.")
+        return redirect('menu')
+    
 #==================================================================#
 def registro_transferencia(valor):
     hora_atual = time().now().time()
     hora_restrita = time(22,0) <+ hora_atual or hora_atual <=time(6,0)
     return not (hora_restrita and valor > 1000)
-        
+
+#------------------------------------------------------------------#        
 def historico_transacoes(request, id_conta):
-    conta = Conta.objects.get(id=id_conta)
-    movimentos = conta.movimentos.all().order_by('-data')
-    return render(request, 'historico.html', {'movimentos':movimentos})
-
-
+    conta = get_object_or_404(Conta, id_conta=id_conta, id_cliente=request.user) 
+    movimentos = Movimento.objects.filter(id_conta=conta).order_by('-data')
+    return render(request, 'clientes/historico.html', {'conta':conta, 'movimentos':movimentos})
 #==================================================================#
+
+
+
+
+
+
