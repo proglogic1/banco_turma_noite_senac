@@ -1,6 +1,13 @@
 from django.urls import path,include
 from django.contrib.auth import views as auth_views
 from .views import * 
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+
+router.register(r'cliente', ClienteViewSet) 
+router.register(r'conta', ContaViewSet)
 
 
 urlpatterns = [
@@ -13,8 +20,9 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
 
-    path('api/clientes/', ClienteListCreateView.as_view(), name='api-clientes'),
-    path('api/contas/', ContaListCreateView.as_view(), name='api-contas'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Gera token de acesso e refresh
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Atualiza o token de acesso
+    path('api/', include(router.urls)),
     
     path('endereco/', endereco, name='Endereco'), # Renderiza a página inicial com o formulário
     path('CEP/', Buscar_Cep, name='CEP'),# Rota para buscar o CEP
