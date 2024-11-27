@@ -1,33 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Histórico de Transações</h2>
-<table class="table">
+<h1>Histórico de Transações - Conta {{ conta.nr_conta }}</h1>
+
+<table>
     <thead>
         <tr>
             <th>Data</th>
             <th>Tipo</th>
             <th>Valor</th>
             <th>Saldo Após Movimento</th>
-            <th>Conta Destinatária</th>
+            <th>Conta Destinatário</th>
         </tr>
     </thead>
     <tbody>
         {% for movimento in movimentos %}
-        <tr>
-            <td>{{ movimento.data }}</td>
-            <td>{{ movimento.tipo_movimento }}</td>
-            <td>R$ {{ movimento.valor }}</td>
-            <td>R$ {{ movimento.saldo_movimento }}</td>
-            <td>
-                {% if movimento.conta_destinatario %}
-                Agência {{ movimento.conta_destinatario.nr_agencia }} - Conta {{ movimento.conta_destinatario.nr_conta }}
-                {% else %}
-                ---
-                {% endif %}
-            </td>
-        </tr>
+            <tr>
+                <td>{{ movimento.data|date:"d/m/Y H:i" }}</td>
+                <td>{{ movimento.tipo_movimento }}</td>
+                <td>{{ movimento.valor }}</td>
+                <td>{{ movimento.saldo_movimento }}</td>
+                <td>{{ movimento.conta_destinatario.nr_conta if movimento.conta_destinatario else "N/A" }}</td>
+            </tr>
         {% endfor %}
     </tbody>
 </table>
-{% endblock %}
