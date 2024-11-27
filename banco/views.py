@@ -174,15 +174,7 @@ class ClienteListCreateView(generics.ListCreateAPIView):
 class ContaListCreateView(generics.ListCreateAPIView):
     queryset = Conta.objects.select_related('id_cliente')  # Otimiza a consulta para incluir dados do cliente
     serializer_class = ContaSerializer
-
-class ClienteCreateAPIView(APIView):
-    def post(self, request):
-        serializer = ClienteSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return response(serializer.data, status=status.HTTP_201_CREATED)
-        return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
 #==================================================================#
 @api_view(['GET'])
 def Buscar_Cep(request):
