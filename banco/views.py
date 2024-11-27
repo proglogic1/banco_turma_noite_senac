@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Cliente, Conta
@@ -6,7 +5,6 @@ from .forms import ClienteForm
 import random
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics
-=======
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from banco.utils import verificar_cpf_existente, verificar_email
@@ -15,17 +13,15 @@ from .forms import ClienteForm, ContaForm, ClienteAlterarForm
 import random
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics, response, status
->>>>>>> Stashed changes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import requests  # type: ignore
-<<<<<<< Updated upstream
-=======
+
 from datetime import datetime, time
 from django.contrib import messages
 
->>>>>>> Stashed changes
+
 
 def gerar_numero_conta():
     while True:
@@ -61,7 +57,7 @@ def cadastrar_cliente(request):
     return render(request, 'clientes/cadastrar_cliente.html', {'form': form})
 
 #==================================================#
-=======
+
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
@@ -133,12 +129,12 @@ def atualizar_cadastro(request, id):
         form = ClienteAlterarForm(instance=cliente)
 
     return render(request, 'clientes/atualizar_cadastro.html', {'form': form})
->>>>>>> Stashed changes
+
 
 #==================================================#
 
 def listar_clientes_contas(request):
-<<<<<<< Updated upstream
+
     clientes = Cliente.objects.all()
     contas = Conta.objects.select_related('id_cliente').all()
     context = {
@@ -150,7 +146,7 @@ def listar_clientes_contas(request):
 #==================================================#
 #API
 # View para listar e criar clientes
-=======
+
     contas = Conta.objects.filter(id_cliente=request.user)
     return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
 
@@ -205,39 +201,38 @@ def menu(request):
 #==================================================#
 
 # API View para listar e criar clientes
->>>>>>> Stashed changes
+
 class ClienteListCreateView(generics.ListCreateAPIView):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
 
 #==================================================#
 
-<<<<<<< Updated upstream
+
 # View para listar e criar contas
-=======
+
 # API View para listar e criar contas
->>>>>>> Stashed changes
+
 class ContaListCreateView(generics.ListCreateAPIView):
     queryset = Conta.objects.select_related('id_cliente')
     serializer_class = ContaSerializer
 
 #==================================================#
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
+
+
 class ClienteCreateAPIView(APIView):
     def post(self, request):
         serializer = ClienteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-<<<<<<< Updated upstream
+
             return Response(serializer.data, status=status.HTTP_201_CREATED) # type: ignore
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # type: ignore
-=======
+
             return response(serializer.data, status=status.HTTP_201_CREATED)
         return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
->>>>>>> Stashed changes
+
 
 #==================================================#
 
@@ -253,14 +248,14 @@ def Buscar_Cep(request):
 
     url = f'https://viacep.com.br/ws/{CEP}/json/'
     response = requests.get(url)
-<<<<<<< Updated upstream
+
 #---------------------------------------------------#
     #Verificando se o serviço retornou com sucesso
     if response.status_code !=200:
-=======
+
 
     if response.status_code != 200:
->>>>>>> Stashed changes
+
         return Response({"error": "erro ao consultar o CEP"}, status=500)
 
     data = response.json()
@@ -271,9 +266,9 @@ def Buscar_Cep(request):
     return Response(data)
 
 def endereco(request):
-<<<<<<< Updated upstream
+
     return render(request, 'localizacao/localizacao.html')
-=======
+
     return render(request, 'localizacao/localizacao.html')
 
 #==================================================#
@@ -326,4 +321,3 @@ def historico_transacoes(request, id_conta):
     movimentos = Movimento.objects.filter(id_conta=conta)
     return render(request, 'clientes/historico.html', {'movimentos': movimentos})
 
->>>>>>> Stashed changes
