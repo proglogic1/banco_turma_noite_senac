@@ -21,4 +21,6 @@ urlpatterns = [
 
     path('poupanca/', transacao_poupanca, name='transacao_poupanca'),
     path('corrente/', transacao_corrente, name='transacao_corrente'),
+    
+    path('transferencia/', realizar_transferencia, name='realizar_transferencia'),
 ]
