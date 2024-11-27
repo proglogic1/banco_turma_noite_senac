@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from decimal import Decimal
+from django.db import models
+
 from django.utils.timezone import now
 
 # Gerenciador de usuários personalizado
@@ -28,7 +31,7 @@ class CustomUserManager(BaseUserManager):
 class Cliente(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=256)
-    telefone = models.CharField(max_length=14)
+    telefone = models.CharField(max_length=15)
     cpf = models.CharField(max_length=14, unique=True)
     email = models.EmailField(unique=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
@@ -63,7 +66,7 @@ class Conta(models.Model):
     nr_agencia = models.CharField(max_length=3)
     dt_cadastro = models.DateTimeField(auto_now_add=True)
     tipo_conta = models.CharField(max_length=10, choices=[('Corrente', 'Corrente'), ('Poupanca', 'Poupanca')])
-    saldo = models.FloatField(default=0.0)
+    saldo = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
 
     def __str__(self):
         return self.nr_conta
