@@ -1,9 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
-from decimal import Decimal
-from django.db import models
-
-from django.utils.timezone import now
 
 # Gerenciador de usuários personalizado
 class CustomUserManager(BaseUserManager):
@@ -28,11 +24,12 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+#==================================================#
 class Cliente(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=256)
-    telefone = models.CharField(max_length=15)
-    cpf = models.CharField(max_length=14, unique=True)
+    telefone = models.CharField(max_length=11)
+    cpf = models.CharField(max_length=11, unique=True)
     email = models.EmailField(unique=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
     
@@ -44,7 +41,7 @@ class Cliente(AbstractBaseUser):
 
     # Campos obrigatórios para autenticação
     USERNAME_FIELD = 'cpf'
-    REQUIRED_FIELDS = ['email','telefone']
+    REQUIRED_FIELDS = ['email', 'nome', 'telefone']
 
     objects = CustomUserManager()
 
@@ -66,40 +63,22 @@ class Conta(models.Model):
     nr_agencia = models.CharField(max_length=3)
     dt_cadastro = models.DateTimeField(auto_now_add=True)
     tipo_conta = models.CharField(max_length=10, choices=[('Corrente', 'Corrente'), ('Poupanca', 'Poupanca')])
-    saldo = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
 
     def __str__(self):
-        return self.nr_conta
-    
-    #Metodo para verificar o saldo
-    def verificar_saldo(self, quant):
-        return self.saldo >= quant
-    
-    #Método para atualizar o saldo
-    def atualizar_saldo(self, quant, is_credito=True):
-        if is_credito:
-            self.saldo += quant
-        else:
-            self.saldo -= quant
-        self.save()
+        return self.NR_conta
 
 # #==================================================#
 
 class Movimento(models.Model):
     id_movimento = models.AutoField(primary_key=True)
-    id_conta = models.ForeignKey(Conta, on_delete=models.CASCADE, related_name='movimentos')
-    tipo_movimento = models.CharField(max_length=13, choices=[
-        ('Credito', 'Credito'),
-        ('Debito', 'Debito'),
-        ('Transferencia', 'Transferência')
-    ])
+    id_conta = models.ForeignKey(Conta, on_delete=models.CASCADE)
+    tipo_movimento = models.CharField(max_length=10, choices=[('Credito', 'Credito'), ('Debito', 'Debito')])
     valor = models.FloatField()
-    saldo_movimento = models.FloatField()  # Saldo atualizado após o movimento
     data = models.DateTimeField(auto_now_add=True)
-    conta_destinatario = models.ForeignKey(
-        Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='transferencias_recebidas'
-    )
-
+<<<<<<< Updated upstream
+=======
+    conta_destinatario = models.ForeignKey(Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='Transferencias_Recebidas')
+    
     def __str__(self):
         return f"{self.tipo_movimento} - {self.valor} ({self.data})"
     
@@ -125,6 +104,12 @@ class Movimento(models.Model):
             valor=valor,
             saldo_movimento=conta_destinatario.saldo,
         )
+        Movimento.objects.create(
+            id_conta=conta_destinatario,
+            tipo_movimento='Debito',
+            valor=valor,
+            saldo_movimento=conta_destinatario.saldo,
+        )
 
 
 
@@ -135,5 +120,6 @@ class Movimento(models.Model):
 
 
 
+>>>>>>> Stashed changes
 
-
+#==================================================#
