@@ -216,8 +216,6 @@ class ContaViewSet(viewsets.ModelViewSet):
 
 
 
-
-
 def transacao_poupanca(request):
     conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
     print(conta)
