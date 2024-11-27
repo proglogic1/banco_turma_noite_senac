@@ -15,58 +15,92 @@
         body {
             background-color: #f8f9fa;
         }
+    
         .navbar {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
+    
         .content {
             margin-top: 20px;
         }
+    
         footer {
             margin-top: 20px;
             padding: 10px 0;
             text-align: center;
             background-color: #f1f1f1;
         }
+    
+        .navbar .button-container {
+            display: flex;
+            gap: 50px; /* Espaçamento entre os botões */
+        }
+    
+        .navbar .button-container a button {
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    
+        .navbar .button-container a button:hover {
+            box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.2);
+        }
     </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'menu' %}">
-                <i class="bi bi-bank"></i> Meu Sistema Bancário
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <!-- Exibe o nome do cliente e saldo -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <strong>Bem-Vindo: {{ user.nome }}</strong> | Saldo: R$ {{ saldo|floatformat:2 }}
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'menu' %}">Menu</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">
-                                <i class="bi bi-box-arrow-right"></i> Sair
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+    
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'menu' %}">
+                    <i class="bi bi-bank"></i> Meu Sistema Bancário
+                </a>
+    
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <li class="container">
+                    <a href="{% url 'transacao_poupanca' %}">
+                        <button class="btn btn-primary">Transação Poupança</button>
+                    </a>
+                    <a href="{% url 'transacao_corrente' %}">
+                        <button class="btn btn-primary">Transação Corrente</button>
+                    </a>
+                </li>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                            <!-- Exibe o nome do cliente e saldo -->
+                            <li class="nav-item">
+                                <a class="nav-link">
+                                    <strong>Bem-Vindo: {{ user.nome }}</strong> | Saldo: R$ {{ saldo|floatformat:2 }}
+                                </a>
+                            </li>
+    
+
+    
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'menu' %}">Menu</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'logout' %}">
+                                    <i class="bi bi-box-arrow-right"></i> Sair
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+
+    
 
     <!-- Main Content -->
     <div class="container content">

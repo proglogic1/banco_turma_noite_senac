@@ -295,7 +295,7 @@ def endereco(request):
     return response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-=======
+
 #==================================================================#
 #@login_required
 def realizar_transferencia(request):
