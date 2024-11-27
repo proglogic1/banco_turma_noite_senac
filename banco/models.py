@@ -80,8 +80,7 @@ class Conta(models.Model):
             self.saldo -= quant
         self.save()
 
-# #==================================================#
-
+#==================================================#
 class Movimento(models.Model):
     id_movimento = models.AutoField(primary_key=True)
     id_conta = models.ForeignKey(Conta, on_delete=models.CASCADE, related_name='movimentos')
@@ -96,8 +95,10 @@ class Movimento(models.Model):
     conta_destinatario = models.ForeignKey(
         Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='transferencias_recebidas'
     )
-    def __str__(self):
+
+    def _str_(self):
         return f"{self.tipo_movimento} - {self.valor} ({self.data})"
+#---------------------------------------------------#
 
     def transferencia(self, conta_destinatario, valor):
         if not self.verificar_saldo(valor):
