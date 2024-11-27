@@ -1,97 +1,102 @@
-/* Estilos gerais */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
+/* Estilo geral para o container */
 .container {
-    background: #fff;
-    padding: 20px 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #333;
 }
 
+/* Estilo para o título */
 h1 {
     text-align: center;
-    font-size: 24px;
     margin-bottom: 20px;
-    color: #007bff;
+    color: #007BFF;
 }
 
-label {
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
+/* Estilo para o formulário */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-input[type="text"] {
-    width: 100%;
-    padding: 8px 10px;
-    margin-bottom: 15px;
+.form-container input {
+    padding: 10px;
+    font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 16px;
+    transition: border-color 0.3s ease-in-out;
 }
 
-button {
-    width: 100%;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 15px;
+.form-container input:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.form-container button {
+    padding: 10px;
     font-size: 16px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease-in-out;
 }
 
-button:hover {
+.form-container button:hover {
     background-color: #0056b3;
 }
 
+/* Estilo para os resultados */
 .result-container {
-    margin-top: 20px;
-    background-color: #f9f9f9;
-    padding: 15px;
     border: 1px solid #ddd;
+    padding: 20px;
     border-radius: 4px;
+    background-color: #f9f9f9;
 }
 
 .result-container h3 {
-    margin-top: 0;
-    font-size: 18px;
+    margin-bottom: 20px;
     color: #333;
 }
 
-.error {
-    margin-top: 20px;
-    color: #d9534f;
-    background: #f8d7da;
-    padding: 10px;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
+.result-container div {
+    margin-bottom: 15px;
 }
 
-/* Estilos para dispositivos menores */
-@media (max-width: 600px) {
-    .container {
-        padding: 15px;
-    }
+.result-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
 
-    h1 {
-        font-size: 20px;
-    }
+.result-container input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease-in-out;
+}
 
-    button {
-        font-size: 14px;
-    }
+.result-container input:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Estilo para mensagens de erro */
+.error {
+    background-color: #ffe5e5;
+    border: 1px solid #ff4d4d;
+    padding: 10px;
+    border-radius: 4px;
+    color: #900;
+    margin-top: 20px;
 }
