@@ -40,26 +40,8 @@ class SaldoForm(forms.Form):
 class ClienteAlterarForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nome', 'cpf', 'telefone', 'email']
+        fields = [ 'telefone', 'email']
 
+class TransacaoForm(forms.Form):
+    valor = forms.DecimalField(max_digits=10, decimal_places=2, min_value=0.01)
 
-class TransferenciaForm(forms.Form):
-    conta_origem = forms.ModelChoiceField(
-        queryset=Conta.objects.all(),
-        label="Conta de Origem",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-    valor = forms.FloatField(
-        label="Valor da Transferência",
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Digite o valor'})
-    )
-    cpf_destino = forms.CharField(
-        max_length=14,
-        label="CPF do Beneficiário",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Digite o CPF'})
-    )
-    conta_destino = forms.ModelChoiceField(
-        queryset=Conta.objects.all(),
-        label="Conta de Destino",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )

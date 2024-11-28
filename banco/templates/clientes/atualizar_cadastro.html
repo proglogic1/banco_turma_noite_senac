@@ -1,38 +1,73 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center text-primary mb-4">Atualizar Cadastro</h1>
-    
-    <form method="post" class="p-4 border rounded bg-light shadow-sm">
-        {% csrf_token %}
+
+<style>
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f9f9f9; /* Cor do fundo */
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 24px;
+        color: #333;
+    }
+
+    form {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        display: flex;
+        flex-direction: column;
         
-        <div class="mb-3">
-            <label for="id_nome" class="form-label"><strong>Nome</strong></label>
-            <input type="text" id="id_nome" name="nome" class="form-control bg-light text-muted" 
-                   value="{{ form.nome.value }}" readonly tabindex="-1">
-        </div>
-        
-        <div class="mb-3">
-            <label for="id_cpf" class="form-label"><strong>CPF</strong></label>
-            <input type="text" id="id_cpf" name="cpf" class="form-control bg-light text-muted" 
-                   value="{{ form.cpf.value }}" readonly tabindex="-1">
-        </div>
-        
-        <div class="mb-3">
-            <label for="id_telefone" class="form-label"><strong>Telefone</strong></label>
-            <input type="text" id="id_telefone" name="telefone" class="form-control" value="{{ form.telefone.value }}">
-        </div>
-        
-        <div class="mb-3">
-            <label for="id_email" class="form-label"><strong>Email</strong></label>
-            <input type="email" id="id_email" name="email" class="form-control" value="{{ form.email.value }}">
-        </div>
-        
-        <div class="d-flex justify-content-between mt-4">
-            <button type="submit" class="btn btn-success">Salvar</button>
-            <a href="{% url 'menu' %}" class="btn btn-danger">Cancelar</a>
-        </div>
-    </form>
-</div>
+    }
+
+    form label {
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+
+    form input, form select, form textarea {
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        width: 100%;
+    }
+
+    form button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    form button:hover {
+        background-color: #45a049;
+    }
+
+</style>
+<body>
+    <div>
+        <h1>Atualizar Cadastro</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Salvar</button>
+        </form>
+        <a href="{% url 'menu' %}">Cancelar</a>
+        <a href="{% url 'two_factor:profile' %}">verificação de duas etapas</a>
+    </div>
+</body>
 {% endblock %}
