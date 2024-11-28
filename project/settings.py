@@ -171,8 +171,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'senaccontabancaria2024@gmail.com'
-<<<<<<< Updated upstream
 EMAIL_HOST_PASSWORD = 'sqzt zxwk oexk qbcb'
-=======
-EMAIL_HOST_PASSWORD = 'contabancaria2024'
->>>>>>> Stashed changes
