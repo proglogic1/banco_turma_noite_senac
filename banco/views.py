@@ -13,6 +13,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from datetime import time
 from django.contrib import messages
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import ContaForm
 
 
 #@login_required
@@ -79,9 +82,7 @@ def cadastrar_cliente(request):
     
     return render(request, 'clientes/cadastro.html', {'form': form})
 
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from .forms import ContaForm
+
 
 @login_required
 def cadastrar_conta(request):

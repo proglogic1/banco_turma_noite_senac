@@ -83,18 +83,7 @@ class Conta(models.Model):
             self.saldo -= quant
         self.save()
 
-    # Sobrescreve o método save para validar contas já existentes
-    def save(self, *args, **kwargs):
-        # Verifica se já existe uma conta do tipo escolhido para o cliente
-        if Conta.objects.filter(id_cliente=self.id_cliente, tipo_conta=self.tipo_conta).exists():
-            raise ValueError(f"Você já possui uma conta {self.tipo_conta} registrada.")
-        
-        # Verifica se o cliente já tem uma conta do tipo oposto
-        tipo_oposto = 'Corrente' if self.tipo_conta == 'Poupanca' else 'Poupanca'
-        if Conta.objects.filter(id_cliente=self.id_cliente, tipo_conta=tipo_oposto).exists():
-            raise ValueError(f"Você já possui uma conta {tipo_oposto} registrada.")
-        
-        super().save(*args, **kwargs)  # Chama o método save do modelo pai
+   
 
 
     # Método para verificar saldo
