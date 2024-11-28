@@ -1,3 +1,6 @@
+{% extends 'base.html' %}
+
+{% block content %}
 <h1>Histórico de Transações - Conta {{ conta.nr_conta }}</h1>
 
 <table>
@@ -17,8 +20,15 @@
                 <td>{{ movimento.tipo_movimento }}</td>
                 <td>{{ movimento.valor }}</td>
                 <td>{{ movimento.saldo_movimento }}</td>
-                <td>{{ movimento.conta_destinatario.nr_conta if movimento.conta_destinatario else "N/A" }}</td>
-            </tr>
+                <td>
+                    {% if movimento.conta_destinatario %}
+                        {{ movimento.conta_destinatario.nr_conta }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
         {% endfor %}
     </tbody>
+    
 </table>
+{% endblock %}
