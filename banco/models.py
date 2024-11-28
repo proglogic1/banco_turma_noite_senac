@@ -68,11 +68,24 @@ class Conta(models.Model):
     def __str__(self):
         return self.nr_conta
 
+    # Sobrescreve o método save para validar contas já existentes
+    def save(self, *args, **kwargs):
+        # Verifica se já existe uma conta do tipo escolhido para o cliente
+        if Conta.objects.filter(id_cliente=self.id_cliente, tipo_conta=self.tipo_conta).exists():
+            raise ValueError(f"Você já possui uma conta {self.tipo_conta} registrada.")
+        
+        # Verifica se o cliente já tem uma conta do tipo oposto
+        tipo_oposto = 'Corrente' if self.tipo_conta == 'Poupanca' else 'Poupanca'
+        if Conta.objects.filter(id_cliente=self.id_cliente, tipo_conta=tipo_oposto).exists():
+            raise ValueError(f"Você já possui uma conta {tipo_oposto} registrada.")
+        
+        super().save(*args, **kwargs)  # Chama o método save do modelo pai
+    
     #Metodo para verificar o saldo
     def verificar_saldo(self, quant):
         return self.saldo >= quant
-
-    #Método para atualizar o saldo
+    
+    # Método para atualizar saldo
     def atualizar_saldo(self, quant, is_credito=True):
         if is_credito:
             self.saldo += quant
@@ -91,6 +104,7 @@ class Movimento(models.Model):
     ])
     valor = models.FloatField()
     saldo_movimento = models.FloatField()  # Saldo atualizado após o movimento
+
     data = models.DateTimeField(auto_now_add=True)
     conta_destinatario = models.ForeignKey(
         Conta, on_delete=models.SET_NULL, null=True, blank=True, related_name='transferencias_recebidas'
@@ -98,6 +112,7 @@ class Movimento(models.Model):
 
     def _str_(self):
         return f"{self.tipo_movimento} - {self.valor} ({self.data})"
+
 #---------------------------------------------------#
 
     def transferencia(self, conta_destinatario, valor):
@@ -122,3 +137,4 @@ class Movimento(models.Model):
             valor=valor,
             saldo_movimento=conta_destinatario.saldo,
         )
+

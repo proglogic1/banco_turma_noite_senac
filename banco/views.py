@@ -22,7 +22,9 @@ import requests  # type: ignore
 from datetime import datetime, time
 from django.contrib import messages
 from decimal import Decimal
-
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import ContaForm
 
 #@login_required
 def gerar_numero_conta():
@@ -95,12 +97,16 @@ def cadastrar_cliente(request):
 
     return render(request, 'clientes/cadastro.html', {'form': form})
 
-#==================================================#
+
+
+
+@login_required
 
 def cadastrar_conta(request):
     if request.method == 'POST':
         form = ContaForm(request.POST)
         if form.is_valid():
+
             numero_conta = gerar_numero_conta()
             conta = Conta.objects.create(
                 id_cliente=request.user,
@@ -110,12 +116,33 @@ def cadastrar_conta(request):
             )
             messages.success(request, 'Conta criada com sucesso!')
             return redirect('listar_clientes_contas')
+
+            tipo_conta = form.cleaned_data['tipo_conta']
+            numero_conta = gerar_numero_conta()  # Gera um número único de conta
+
+            try:
+                # Tenta salvar a conta
+                conta = Conta.objects.create(
+                    id_cliente=request.user,
+                    nr_conta=numero_conta,
+                    nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
+                    tipo_conta=tipo_conta
+                )
+                messages.success(request, f"Conta {tipo_conta} criada com sucesso!")
+                return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
+            except ValueError as e:
+                # Se houver um ValueError (ex: contas conflitantes), mostra uma mensagem de erro
+                messages.error(request, str(e))
+        else:
+            messages.error(request, "O formulário contém erros.")
+
     else:
         form = ContaForm()
 
     return render(request, 'clientes/cadastrar_conta.html', {'form': form})
 
-#==================================================#
+
+@login_required
 
 def atualizar_cadastro(request, id):
     cliente = get_object_or_404(Cliente, id=id)
@@ -320,7 +347,9 @@ def endereco(request):
     return render(request, 'localizacao/localizacao.html')
 
 
-#==================================================#
+
+#==================================================================#
+@login_required
 
 def realizar_transferencia(request):
     if request.method == 'POST':
