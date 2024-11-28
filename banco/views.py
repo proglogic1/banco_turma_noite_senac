@@ -1,4 +1,10 @@
 from django.contrib.auth.decorators import login_required
+
+from django.contrib import messages
+from .models import Cliente, Conta, Movimento
+from .forms import ClienteForm, ContaForm,ClienteAlterarForm,TransferenciaForm
+from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe
+from .models import Cliente, Conta
 from .forms import ClienteForm
 from .serializers import ClienteSerializer, ContaSerializer
 from django.shortcuts import render, redirect, get_object_or_404
@@ -14,7 +20,9 @@ import requests
 from datetime import datetime, time
 from django.contrib import messages
 from decimal import Decimal
-
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import ContaForm
 
 #@login_required
 def gerar_numero_conta():
@@ -87,12 +95,17 @@ def cadastrar_cliente(request):
 
     return render(request, 'clientes/cadastro.html', {'form': form})
 
-#==================================================#
+
+
+
+@login_required
 
 def cadastrar_conta(request):
+    cliente = Cliente.objects.get(id=request.user.id)
     if request.method == 'POST':
         form = ContaForm(request.POST)
         if form.is_valid():
+
             numero_conta = gerar_numero_conta()
             conta = Conta.objects.create(
                 id_cliente=request.user,
@@ -102,12 +115,59 @@ def cadastrar_conta(request):
             )
             messages.success(request, 'Conta criada com sucesso!')
             return redirect('listar_clientes_contas')
+
+            tipo_conta = form.cleaned_data['tipo_conta']
+            numero_conta = gerar_numero_conta()  # Gera um número único de conta
+
+            if verificar_conta_existe(numero_conta):
+                 form.add_error('numero_conta', "Essa conta ja existe")
+            elif verificar_tipo_conta_existe(request.user,tipo_conta):
+                 form.add_error('tipo_conta', 'Você já possui uma conta desse tipo.')
+                 #INSERIR POPUP NA TELA INFORMANDO QUE JA EXISTE UMA CONTA DESSE TIPO
+                 
+            else:      
+                
+                conta = Conta.objects.create(
+                        id_cliente=request.user,
+                        nr_conta=numero_conta,
+                        nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
+                        tipo_conta=tipo_conta  # Você pode ajustar para um valor padrão ou capturar do formulário
+                    )
+                
+            return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
+    else:
+        form = ContaForm()
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0   
+    context = {
+        'form': form,
+        'saldo': saldo_total
+    }
+    
+
+            try:
+                # Tenta salvar a conta
+                conta = Conta.objects.create(
+                    id_cliente=request.user,
+                    nr_conta=numero_conta,
+                    nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
+                    tipo_conta=tipo_conta
+                )
+                messages.success(request, f"Conta {tipo_conta} criada com sucesso!")
+                return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
+            except ValueError as e:
+                # Se houver um ValueError (ex: contas conflitantes), mostra uma mensagem de erro
+                messages.error(request, str(e))
+        else:
+            messages.error(request, "O formulário contém erros.")
+
     else:
         form = ContaForm()
 
-    return render(request, 'clientes/cadastrar_conta.html', {'form': form})
 
-#==================================================#
+    return render(request, 'clientes/cadastrar_conta.html', context)
+
+
+@login_required
 
 def atualizar_cadastro(request, id):
     cliente = get_object_or_404(Cliente, id=id)
@@ -120,18 +180,25 @@ def atualizar_cadastro(request, id):
     else:
         form = ClienteAlterarForm(instance=cliente)
 
-    return render(request, 'clientes/atualizar_cadastro.html', {'form': form})
+        
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
+    context = {
+        'form': form,
+        'saldo': saldo_total
+    }
 
 
-#==================================================#
+
 
 def listar_clientes_contas(request):  # sourcery skip: remove-unreachable-code
 
     clientes = Cliente.objects.all()
     contas = Conta.objects.select_related('id_cliente').all()
     context = {
+
         'clientes': clientes,
         'contas': contas
+
     }
     return render(request, 'clientes/listar_clientes_contas.html', context)
 
@@ -144,10 +211,28 @@ def listar_clientes_contas(request):  # sourcery skip: remove-unreachable-code
 
 #==================================================#
 
+
+
 def editar_saldo(request, conta_id):
+
     contas = Conta.objects.filter(id_cliente=request.user)
+    context = {
+               'contas': contas,
+               'saldo':saldo_total
+              }
+    return render(request, 'clientes/atualizar_saldo.html', context)
+
+@login_required
+def transferencia(request):
+    usuario = request.user
+    contas_usuario = Conta.objects.filter(id_cliente=usuario)
+    saldo_total = calcular_saldo_total(usuario) if usuario else 0.0
+    contas_destino = []
+    cliente_destino = ""
+    cpf_destino = ""
 
     if request.method == 'POST':
+
         conta_id = request.POST.get('conta_id')
         novo_saldo = request.POST.get('novo_saldo')
 
@@ -158,9 +243,15 @@ def editar_saldo(request, conta_id):
             messages.success(request, 'Saldo atualizado com sucesso!')
             return redirect('menu')
 
-    return render(request, 'clientes/editar_saldo.html', {'contas': contas})
 
-#==================================================#
+            # Verifica se há saldo suficiente
+            if conta_origem.saldo < valor_transferencia:
+                return render(request, 'transferencia.html', {
+                    'error': 'Saldo insuficiente.',
+                    'contas_usuario': contas_usuario,
+                    'contas_destino': contas_destino,
+                })
+
 
 def menu(request):
     cliente = Cliente.objects.filter(id=request.user.id)
@@ -189,6 +280,7 @@ def menu(request):
     }
 
     return render(request, 'clientes/menu.html', context)
+
 
 def transacao_poupanca(request):
     conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
@@ -323,6 +415,7 @@ def transacao_corrente(request):
 
 
 #==================================================================#
+
 #API
 # View para listar e criar clientes
 class ClienteListCreateView(generics.ListCreateAPIView):
@@ -380,7 +473,9 @@ def endereco(request):
     return render(request, 'localizacao/localizacao.html')
 
 
-#==================================================#
+
+#==================================================================#
+@login_required
 
 def realizar_transferencia(request):
     if request.method == 'POST':
@@ -476,3 +571,5 @@ def historico_transacoes(request, id_conta):
     conta = get_object_or_404(Conta, id_conta=id_conta, id_cliente=request.user)
     movimentos = Movimento.objects.filter(id_conta=conta).order_by('-data')
     return render(request, 'clientes/historico.html', {'conta': conta, 'movimentos': movimentos})
+
+#==================================================#
