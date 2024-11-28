@@ -71,32 +71,7 @@ class Conta(models.Model):
     def __str__(self):
         return self.nr_conta
 
-    # Método para verificar saldo
-    def verificar_saldo(self, quant):
-        return self.saldo >= quant
-    
-    # Método para atualizar saldo
-    def atualizar_saldo(self, quant, is_credito=True):
-        if is_credito:
-            self.saldo += quant
-        else:
-            self.saldo -= quant
-        self.save()
 
-   
-
-
-    # Método para verificar saldo
-    def verificar_saldo(self, quant):
-        return self.saldo >= quant
-    
-    # Método para atualizar saldo
-    def atualizar_saldo(self, quant, is_credito=True):
-        if is_credito:
-            self.saldo += quant
-        else:
-            self.saldo -= quant
-        self.save()
 
 
 # #==================================================#
