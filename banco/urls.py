@@ -4,9 +4,9 @@ from .views import *
 
 
 urlpatterns = [
-    path('lista/',listar_clientes_contas,name='listar_clientes_contas'),#
+    path('lista/',listar_clientes_contas,name='listar_clientes_contas'),
     path('cadastro/', cadastrar_cliente , name ='cadastro' ),
-    path('', menu, name='menu'),#
+    path('', menu, name='menu'),
     path('cadastrar_conta/', cadastrar_conta , name ='cadastrar_conta' ),
     path('atualizar_cadastro/<int:id>/', atualizar_cadastro, name='atualizar_cadastro'),
 
@@ -23,4 +23,5 @@ urlpatterns = [
     path('corrente/', transacao_corrente, name='transacao_corrente'),
     
     path('transferencia/', realizar_transferencia, name='realizar_transferencia'),
+   
 ]

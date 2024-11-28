@@ -31,7 +31,7 @@ class CustomUserManager(BaseUserManager):
 class Cliente(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=256)
-    telefone = models.CharField(max_length=14)
+    telefone = models.CharField(max_length=15)
     cpf = models.CharField(max_length=14, unique=True)
     email = models.EmailField(unique=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
