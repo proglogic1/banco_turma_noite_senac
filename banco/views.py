@@ -1,24 +1,16 @@
-from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Cliente, Conta
 from .forms import ClienteForm
-import random
 from .serializers import ClienteSerializer, ContaSerializer
-from rest_framework import generics
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from banco.utils import verificar_cpf_existente, verificar_email
 from .models import Cliente, Conta, Movimento
 from .forms import ClienteForm, ContaForm,ClienteAlterarForm, TransacaoForm
 from .utils import gerar_numero_conta, verificar_cpf_existente, verificar_email
 import random
-from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics, response, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-import requests  # type: ignore
-
+import requests  
 from datetime import datetime, time
 from django.contrib import messages
 from decimal import Decimal
