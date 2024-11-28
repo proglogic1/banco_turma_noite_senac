@@ -262,6 +262,74 @@ def transacao_corrente(request):
     return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
 
 
+
+
+
+
+def transacao_poupanca(request):
+    conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
+    print(conta)
+    if conta is None:
+        messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
+        return redirect('transacao_poupanca')  
+
+    
+    if request.method == "POST":
+        form = TransacaoForm(request.POST)
+        if form.is_valid():
+            
+            valor = Decimal(str(form.cleaned_data['valor']))
+            
+            if 'depositar' in request.POST:
+                conta.saldo += valor 
+                messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
+            elif 'sacar' in request.POST:
+                if conta.saldo >= valor:
+                    conta.saldo -= valor  
+                    messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
+                else:
+                    messages.error(request, "Saldo insuficiente para realizar o saque.")
+            
+           
+            conta.save()
+            return redirect('menu')
+    else:
+        form = TransacaoForm()
+
+    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form})
+
+
+
+
+def transacao_corrente(request):
+    conta = Conta.objects.filter(tipo_conta='Corrente').first() 
+    print(conta)
+    if conta is None:
+        messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
+        return redirect('transacao_corrente')
+    
+    if request.method == "POST":
+        form = TransacaoForm(request.POST)
+        if form.is_valid():
+            # Converter valor para Decimal
+            valor = Decimal(str(form.cleaned_data['valor']))
+            if 'depositar' in request.POST:
+                conta.saldo += valor
+                messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
+            elif 'sacar' in request.POST:
+                if conta.saldo >= valor:
+                    conta.saldo -= valor
+                    messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
+                else:
+                    messages.error(request, "Saldo insuficiente para realizar o saque.")
+            conta.save()
+            return redirect('menu')
+    else:
+        form = TransacaoForm()
+
+    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
+
+
 #==================================================================#
 #API
 # View para listar e criar clientes

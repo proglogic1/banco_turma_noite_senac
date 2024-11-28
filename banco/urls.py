@@ -3,6 +3,8 @@ from django.contrib.auth import views as auth_views
 from .views import *
 
 
+
+
 urlpatterns = [
     path('lista/',listar_clientes_contas,name='listar_clientes_contas'),#
     path('cadastro/', cadastrar_cliente , name ='cadastro' ),
@@ -33,4 +35,6 @@ urlpatterns = [
     path('reset/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path('reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
    
+
 ]
+
