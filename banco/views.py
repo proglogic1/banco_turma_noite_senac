@@ -510,3 +510,5 @@ def historico_transacoes(request, id_conta):
     conta = get_object_or_404(Conta, id_conta=id_conta, id_cliente=request.user)
     movimentos = Movimento.objects.filter(id_conta=conta).order_by('-data')
     return render(request, 'clientes/historico.html', {'conta': conta, 'movimentos': movimentos})
+
+#==================================================#
