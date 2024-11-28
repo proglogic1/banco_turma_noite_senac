@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Extrato de Movimentações</h1>
+
+    {% if error %}
+        <div class="alert alert-danger text-center mt-4">
+            {{ error }}
+        </div>
+    {% else %}
+        <form method="get" class="mt-4">
+            <div class="form-group">
+                <label for="conta" class="form-label"><strong>Selecione a Conta:</strong></label>
+                <select name="conta" id="conta" class="form-select" onchange="this.form.submit()">
+                    {% for conta in contas %}
+                        <option value="{{ conta.id_conta }}" 
+                            {% if conta.id_conta == conta_selecionada.id_conta %}selected{% endif %}>
+                            {{ conta.nr_conta }} - {{ conta.nr_agencia }} ({{ conta.tipo_conta }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <div class="mt-4">
+            <h2 class="text-primary">Conta Selecionada</h2>
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Número:</strong> {{ conta_selecionada.nr_conta }}</li>
+                <li class="list-group-item"><strong>Agência:</strong> {{ conta_selecionada.nr_agencia }}</li>
+                <li class="list-group-item"><strong>Tipo:</strong> {{ conta_selecionada.tipo_conta }}</li>
+                <li class="list-group-item"><strong>Saldo:</strong> R$ {{ conta_selecionada.saldo }}</li>
+            </ul>
+        </div>
+
+        <div class="mt-4">
+            <h2 class="text-primary">Movimentações</h2>
+            {% if movimentacoes %}
+                <table class="table table-striped table-hover mt-3">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Data</th>
+                            <th scope="col">Tipo de Transação</th>
+                            <th scope="col">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mov in movimentacoes %}
+                            <tr>
+                                <td>{{ mov.data|date:"d/m/Y H:i" }}</td>
+                                <td>{{ mov.tipo_movimento }}</td>
+                                <td>R$ {{ mov.valor }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info text-center mt-3">
+                    Não há movimentações para esta conta.
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
