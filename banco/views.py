@@ -8,7 +8,6 @@ from .forms import ClienteForm
 from .serializers import ClienteSerializer, ContaSerializer
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Cliente, Conta, Movimento
-from .forms import ClienteForm, ContaForm,ClienteAlterarForm, TransacaoForm
 import random
 from rest_framework import generics, response, status
 from rest_framework.views import APIView
@@ -18,6 +17,7 @@ import requests
 from datetime import datetime, time
 from decimal import Decimal
 from django.http import JsonResponse
+from django.db.models import Sum
 
 
 
@@ -281,7 +281,7 @@ def extrato_conta(request):
     }
     
     if request.method == "POST":
-        form = TransacaoForm(request.POST)
+        form = TransferenciaForm(request.POST)
         if form.is_valid():
             # Converter valor para Decimal
             valor = Decimal(str(form.cleaned_data['valor']))
@@ -297,7 +297,7 @@ def extrato_conta(request):
             conta.save()
             return redirect('menu')
     else:
-        form = TransacaoForm()
+        form = TransferenciaForm()
 
     return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
 
@@ -315,7 +315,7 @@ def transacao_poupanca(request):
 
     
     if request.method == "POST":
-        form = TransacaoForm(request.POST)
+        form = TransferenciaForm(request.POST)
         if form.is_valid():
             
             valor = Decimal(str(form.cleaned_data['valor']))
@@ -334,7 +334,7 @@ def transacao_poupanca(request):
             conta.save()
             return redirect('menu')
     else:
-        form = TransacaoForm()
+        form = TransferenciaForm()
 
     return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
 
@@ -349,7 +349,7 @@ def transacao_corrente(request):
         return redirect('transacao_corrente')
     
     if request.method == "POST":
-        form = TransacaoForm(request.POST)
+        form = TransferenciaForm(request.POST)
         if form.is_valid():
             # Converter valor para Decimal
             valor = Decimal(str(form.cleaned_data['valor']))
@@ -365,7 +365,7 @@ def transacao_corrente(request):
             conta.save()
             return redirect('menu')
     else:
-        form = TransacaoForm()
+        form = TransferenciaForm()
 
     return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
 
