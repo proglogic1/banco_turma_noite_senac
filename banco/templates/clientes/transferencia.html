@@ -18,7 +18,7 @@
             <label for="conta_origem" class="form-label"><strong>Conta de Origem:</strong></label>
             <select name="conta_origem" id="conta_origem" class="form-select" required>
                 <option value="">--- Selecione sua conta ---</option>
-                {% for conta in contas_usuario %}
+                {% for conta in contas %}
                     <option value="{{ conta.id_conta }}">{{ conta.nr_conta }} - {{ conta.nr_agencia }} (Saldo: R$ {{ conta.saldo }})</option>
                 {% endfor %}
             </select>

@@ -14,7 +14,7 @@ urlpatterns = [
     path('atualizar_cadastro/<int:id>/', atualizar_cadastro, name='atualizar_cadastro'),
     path('atualizar_saldo/', atualizar_saldo, name='atualizar_saldo'),
     path('extrato/', extrato_conta, name='extrato_conta'),
-    path('transferencia/',transferencia,name='transferencia'),
+    path('transferencia/',realizar_transferencia,name='transferencia'),
     path('consulta_cliente/', consulta_cliente_view, name='consulta_cliente'),
 
     path('accounts/', include('accounts.urls')),
@@ -26,7 +26,7 @@ urlpatterns = [
     path('endereco/', endereco, name='Endereco'), # Renderiza a página inicial com o formulário
     path('CEP/', Buscar_Cep, name='CEP'),# Rota para buscar o CEP
 
-    path('transferencia/', realizar_transferencia, name='realizar_transferencia'),
+    #path('transferencia/', realizar_transferencia, name='realizar_transferencia'),
     path('historico/<int:id_conta>/', historico_transacoes, name='historico_transacoes'),
     path('saque/<int:conta_id>/', realizar_saque, name='realizar_saque'),
     path('deposito/<int:conta_id>/', realizar_deposito, name='realizar_deposito'),
