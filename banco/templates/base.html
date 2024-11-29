@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>   
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
@@ -32,32 +32,20 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        
         <div class="container">
             <a class="navbar-brand" href="{% url 'menu' %}">
                 <i class="bi bi-bank"></i> Meu Sistema Bancário
             </a>
-            <div class="container mt-5">
-                <div class="d-flex justify-content-center align-items-center">
-                    <a href="{% url 'transacao_poupanca' %}" class="btn btn-primary mx-3">
-                        <i class="bi bi-piggy-bank"></i> Transação Poupança
-                    </a>
-                    <a href="{% url 'transacao_corrente' %}" class="btn btn-primary mx-3">
-                        <i class="bi bi-bank"></i> Transação Corrente
-                    </a>
-                </div>
-            </div>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                         <!-- Exibe o nome do cliente e saldo -->
-                    <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link" href="#">
-                                <strong>Bem-Vindo: {{ user.nome }}</strong> | Saldo: R$ {{ saldo|floatformat:1 }}
+                                <strong>Bem-Vindo: {{ user.nome }}</strong> | Saldo: R$ {{ saldo|floatformat:2 }}
                             </a>
                         </li>
                         <li class="nav-item">

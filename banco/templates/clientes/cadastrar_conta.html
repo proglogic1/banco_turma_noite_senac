@@ -7,16 +7,6 @@
     </header>
 
     <div class="container">
-        <!-- Exibindo mensagens de sucesso e erro -->
-        {% if messages %}
-            <div class="alert-container">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <!-- Formulário de cadastro -->
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}  <!-- Exibe o formulário para selecionar o tipo de conta -->

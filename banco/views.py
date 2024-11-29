@@ -1,131 +1,79 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
-
 from django.contrib import messages
 from .models import Cliente, Conta, Movimento
 from .forms import ClienteForm, ContaForm,ClienteAlterarForm,TransferenciaForm
 from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe
-from .models import Cliente, Conta
-from .forms import ClienteForm
-import random
 from .serializers import ClienteSerializer, ContaSerializer
-from rest_framework import generics
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from banco.utils import verificar_cpf_existente, verificar_email
-from .models import Cliente, Conta, Movimento
-from .forms import ClienteForm, ContaForm,ClienteAlterarForm, TransacaoForm
-from .utils import gerar_numero_conta, verificar_cpf_existente, verificar_email
-import random
-from .serializers import ClienteSerializer, ContaSerializer
-from rest_framework import generics, response, status
+from rest_framework import generics,response,status
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-import requests  # type: ignore
-
-from datetime import datetime, time
-from django.contrib import messages
-from decimal import Decimal
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from .forms import ContaForm
 
 #@login_required
-def gerar_numero_conta():
-    while True:
-        numero_conta = str(random.randint(10000, 99999))
-        if not Conta.objects.filter(nr_conta=numero_conta).exists():
-            return numero_conta
+from django.http import JsonResponse
+from .models import Cliente, Conta
 
-#==================================================#
-#@login_required
+@login_required
+def consulta_cliente_view(request):
+    cpf_destino = request.GET.get('cpf_destino', '').strip()
+    if cpf_destino:
+        try:
+            cliente_destino = Cliente.objects.get(cpf=cpf_destino)
+            contas = Conta.objects.filter(id_cliente=cliente_destino)
+            contas_list = [{'id_conta': conta.id_conta, 'nr_conta': conta.nr_conta, 'nr_agencia': conta.nr_agencia} for conta in contas]
+
+            return JsonResponse({
+                'success': True,
+                'cliente_nome': cliente_destino.nome,
+                'contas': contas_list
+            })
+        except Cliente.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Cliente não encontrado.'})
+    return JsonResponse({'success': False, 'error': 'CPF inválido.'})
+
 def cadastrar_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
+        
         if form.is_valid():
-            cliente = form.save(commit=False)
-            cliente.set_password(form.cleaned_data['senha'])  # Define a senha
+             # Aqui o form já é válido, então podemos criar e salvar o cliente
+            cliente = form.save(commit=False)  # Não salva imediatamente, ainda podemos manipular
+            cliente.set_password(form.cleaned_data['senha'])  # Define a senha criptografada
             cliente.save()  # Agora sim, salva o cliente no banco de dados
-            tipo_conta = form.cleaned_data['tipo_conta']
             
-            # Criar automaticamente uma conta associada ao cliente
-            Conta.objects.create(
-                id_cliente=cliente,
-                nr_conta=gerar_numero_conta(),
-                nr_agencia="0001",
-                tipo_conta=tipo_conta  # ou 'Poupanca', conforme necessário
-            )
+                
             
-            return redirect('listar_clientes_contas')  # Redireciona para uma página de listagem de clientes
-    else:
-        form = ClienteForm()
-    
-    return render(request, 'clientes/cadastrar_cliente.html', {'form': form})
-
-#==================================================#
-
-def cadastrar_cliente(request):
-    if request.method == 'POST':
-        form = ClienteForm(request.POST)
-        cpf = request.POST.get('cpf')
-        email = request.POST.get('email')
-
-        if verificar_cpf_existente(request, cpf):
-            return render(request, 'clientes/cadastro.html', {'form': form, 'error': 'CPF já cadastrado'})
-
-        if verificar_email(request, email):
-            return render(request, 'clientes/cadastro.html', {'form': form, 'error': 'E-mail já cadastrado'})
-
-        if form.is_valid():
-            cliente = form.save(commit=False)
-            cliente.set_password(form.cleaned_data['senha'])
-            cliente.save()  # Salva o cliente no banco de dados
-            
-            numero_conta = gerar_numero_conta()
+            numero_conta = gerar_numero_conta()  # Gera um número único de conta
             conta = Conta.objects.create(
                 id_cliente=cliente,
                 nr_conta=numero_conta,
-                nr_agencia="001",
-                tipo_conta=form.cleaned_data['tipo_conta']
+                nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
+                tipo_conta=form.cleaned_data['tipo_conta']  # Você pode ajustar para um valor padrão ou capturar do formulário
             )
             
-            messages.success(request, 'Cliente e conta criados com sucesso!')
-            return redirect('login')  # Redireciona para a página de login
-
+            return redirect('login')  # Redireciona para uma página de listagem de clientes
+            # Cria a conta associada ao cliente
+        
         else:
             print('Formulário inválido:', form.errors)  # Exibe erros para debug
-            messages.error(request, 'Por favor, corrija os erros no formulário.')
 
     else:
-        form = ClienteForm()
-
+        form = ClienteForm()  # Cria um formulário vazio para GET
+    
     return render(request, 'clientes/cadastro.html', {'form': form})
 
-
-
-
 @login_required
-
 def cadastrar_conta(request):
     cliente = Cliente.objects.get(id=request.user.id)
     if request.method == 'POST':
         form = ContaForm(request.POST)
         if form.is_valid():
-
-            numero_conta = gerar_numero_conta()
-            conta = Conta.objects.create(
-                id_cliente=request.user,
-                nr_conta=numero_conta,
-                nr_agencia="001",
-                tipo_conta=form.cleaned_data['tipo_conta']
-            )
-            messages.success(request, 'Conta criada com sucesso!')
-            return redirect('listar_clientes_contas')
-
-            tipo_conta = form.cleaned_data['tipo_conta']
+            # numero_conta = gerar_numero_conta()  # Gera um número único de conta
+            # nova_conta = form.save(commit=False)  # Não salva ainda no banco
+            # nova_conta.id_cliente = request.user  # Associa a conta ao cliente autenticado
+            # nova_conta.save()  # Salva a nova conta com o número gerado automaticamente
+            tipo_conta=form.cleaned_data['tipo_conta']
+                      
             numero_conta = gerar_numero_conta()  # Gera um número único de conta
-
             if verificar_conta_existe(numero_conta):
                  form.add_error('numero_conta', "Essa conta ja existe")
             elif verificar_tipo_conta_existe(request.user,tipo_conta):
@@ -151,77 +99,77 @@ def cadastrar_conta(request):
     }
     
 
-            try:
-                # Tenta salvar a conta
-                conta = Conta.objects.create(
-                    id_cliente=request.user,
-                    nr_conta=numero_conta,
-                    nr_agencia="001",  # Defina um valor padrão ou gere dinamicamente
-                    tipo_conta=tipo_conta
-                )
-                messages.success(request, f"Conta {tipo_conta} criada com sucesso!")
-                return redirect('listar_clientes_contas')  # Redireciona para a página de listagem das contas
-            except ValueError as e:
-                # Se houver um ValueError (ex: contas conflitantes), mostra uma mensagem de erro
-                messages.error(request, str(e))
-        else:
-            messages.error(request, "O formulário contém erros.")
-
-    else:
-        form = ContaForm()
-
-
     return render(request, 'clientes/cadastrar_conta.html', context)
 
-
 @login_required
-
 def atualizar_cadastro(request, id):
     cliente = get_object_or_404(Cliente, id=id)
     if request.method == 'POST':
         form = ClienteAlterarForm(request.POST, instance=cliente)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Cadastro atualizado com sucesso!')
             return redirect('menu')
     else:
         form = ClienteAlterarForm(instance=cliente)
-
         
     saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
     context = {
         'form': form,
         'saldo': saldo_total
     }
+    return render(request, 'clientes/atualizar_cadastro.html',context)
 
+@login_required
+def listar_clientes_contas(request):
+    # Filtra as contas com base no cliente autenticado
+    cliente = Cliente.objects.get(id=request.user.id)
+    contas = Conta.objects.filter(id_cliente=request.user) 
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
 
+    #contas = Conta.objects.filter(id_cliente=cliente) if cliente else []
 
-
-def listar_clientes_contas(request):  # sourcery skip: remove-unreachable-code
-
-    clientes = Cliente.objects.all()
-    contas = Conta.objects.select_related('id_cliente').all()
     context = {
-
-        'clientes': clientes,
-        'contas': contas
-
+        'contas': contas,
+        'saldo': saldo_total
     }
     return render(request, 'clientes/listar_clientes_contas.html', context)
-
-#==================================================#
-#API
-# View para listar e criar clientes
-
-    contas = Conta.objects.filter(id_cliente=request.user)
-    return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
-
-#==================================================#
+    #return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
 
 
 
-def editar_saldo(request, conta_id):
+@login_required
+def atualizar_saldo(request):
+    cliente = Cliente.objects.get(id=request.user.id)
+    if request.method == 'POST':
+        conta_id = request.POST.get('conta')  # ID da conta selecionada
+        valor = float(request.POST.get('valor'))  # Valor inserido
+        tipo = request.POST.get('tipo')  # Tipo de movimento: Crédito ou Débito
 
+        # Validação básica
+        conta = get_object_or_404(Conta, id_conta=conta_id)
+        #conta = Conta.objects.filter(id_cliente=request.user)
+        if tipo == 'Debito' and valor > conta.saldo:
+            messages.error(request, 'Saldo insuficiente para débito.')
+            return redirect('atualizar_saldo')
+        
+        # Atualização do saldo
+        if tipo == 'Credito':
+            conta.saldo += valor
+        elif tipo == 'Debito':
+            conta.saldo -= valor
+
+        conta.save()
+
+        # Registrar a movimentação
+        Movimento.objects.create(
+            id_conta=conta,
+            tipo_movimento=tipo,
+            valor=valor
+        )
+
+        messages.success(request, 'Saldo atualizado com sucesso.')
+        return redirect('menu')
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
     contas = Conta.objects.filter(id_cliente=request.user)
     context = {
                'contas': contas,
@@ -239,17 +187,30 @@ def transferencia(request):
     cpf_destino = ""
 
     if request.method == 'POST':
+        cpf_destino = request.POST.get('cpf_destino', '').strip()
+        if cpf_destino:
+            try:
+                cliente_destino = Cliente.objects.get(cpf=cpf_destino)
+                contas_destino = Conta.objects.filter(id_cliente=cliente_destino)
+            except Cliente.DoesNotExist:
+                cliente_destino = None
+                contas_destino = []
 
-        conta_id = request.POST.get('conta_id')
-        novo_saldo = request.POST.get('novo_saldo')
+        conta_origem_id = request.POST.get('conta_origem')
+        conta_destino_id = request.POST.get('conta_destino')
+        valor_transferencia = float(request.POST.get('valor', 0))
 
-        if conta_id and novo_saldo:
-            conta = Conta.objects.get(id_conta=conta_id)
-            conta.saldo = novo_saldo
-            conta.save()
-            messages.success(request, 'Saldo atualizado com sucesso!')
-            return redirect('menu')
+        if conta_origem_id and conta_destino_id and valor_transferencia > 0:
+            conta_origem = get_object_or_404(Conta, id_conta=conta_origem_id)
+            conta_destino = get_object_or_404(Conta, id_conta=conta_destino_id)
 
+            # Verifica se a conta de origem pertence ao usuário logado
+            if conta_origem.id_cliente != usuario:
+                return render(request, 'clientes/transferencia.html', {
+                    'error': 'Conta de origem inválida.',
+                    'contas_usuario': contas_usuario,
+                    'contas_destino': contas_destino,
+                })
 
             # Verifica se há saldo suficiente
             if conta_origem.saldo < valor_transferencia:
@@ -259,77 +220,75 @@ def transferencia(request):
                     'contas_destino': contas_destino,
                 })
 
+            # Realiza a transferência
+            conta_origem.saldo -= valor_transferencia
+            conta_destino.saldo += valor_transferencia
+            conta_origem.save()
+            conta_destino.save()
 
+            # Registra os movimentos
+            Movimento.objects.create(id_conta=conta_origem, tipo_movimento='Debito', valor=valor_transferencia)
+            Movimento.objects.create(id_conta=conta_destino, tipo_movimento='Credito', valor=valor_transferencia)
+
+            return render(request, 'clientes/transferencia.html', {
+                'success': 'Transferência realizada com sucesso.',
+                'contas_usuario': contas_usuario,
+                'contas_destino': [],
+            })
+    context ={
+        'contas_usuario': contas_usuario,
+        'contas_destino': contas_destino,
+        'cliente_destino': cliente_destino,
+        'cpf_destino': cpf_destino,
+        'saldo': saldo_total
+    }
+
+    return render(request, 'clientes/transferencia.html', context)
+@login_required
 def menu(request):
-    cliente = Cliente.objects.filter(id=request.user.id)
-    selected_conta_id = request.GET.get('conta_id')
-
     if not request.user.is_authenticated:
-        return redirect('two_factor:login')
+        return redirect('login')  # Redireciona para a página de login se necessário
 
-    if request.method == 'POST':
-        conta_id = request.POST.get('conta_id')
-        if conta_id:
-            request.session['selected_conta_id'] = conta_id  # Salva a conta selecionada na sessão
+    try:
+        # Ajuste aqui para relacionar Cliente ao User, se necessário
+        cliente = Cliente.objects.get(id=request.user.id)
+    except Cliente.DoesNotExist:
+        cliente = None
 
-    conta_selecionada = None
-    if 'selected_conta_id' in request.session:
-        selected_conta_id = Conta.objects.get(id=request.session['selected_conta_id'])
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
+    contas = Conta.objects.filter(id_cliente=cliente) if cliente else []
 
-    contas = Conta.objects.filter(id_cliente=request.user)
-    saldo = selected_conta_id.saldo if selected_conta_id else 0.00
-
+    # Passa os dados ao template
     context = {
         'cliente': cliente,
         'contas': contas,
-        'selected_conta_id': selected_conta_id,
-        'saldo': saldo
+        'saldo': saldo_total
     }
-
     return render(request, 'clientes/menu.html', context)
 
-
-def transacao_poupanca(request):
-    conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
-    print(conta)
-    if conta is None:
-        messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
-        return redirect('transacao_poupanca')  
-
+def extrato_conta(request):
+    cliente = request.user  # Cliente logado
+    contas = Conta.objects.filter(id_cliente=cliente)  # Contas do cliente
     
-    if request.method == "POST":
-        form = TransacaoForm(request.POST)
-        if form.is_valid():
-            
-            valor = Decimal(str(form.cleaned_data['valor']))
-            
-            if 'depositar' in request.POST:
-                conta.saldo += valor 
-                messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
-            elif 'sacar' in request.POST:
-                if conta.saldo >= valor:
-                    conta.saldo -= valor  
-                    messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
-                else:
-                    messages.error(request, "Saldo insuficiente para realizar o saque.")
-            
-           
-            conta.save()
-            return redirect('menu')
+    if not contas.exists():
+        return render(request, 'clientes/movimentacoes.html', {'error': 'Você não possui contas cadastradas.'})
+
+    # Conta padrão (primeira conta do cliente)
+    conta_id = request.GET.get('conta')  # ID da conta selecionada via combo box
+    if conta_id:
+        conta = get_object_or_404(Conta, id_conta=conta_id, id_cliente=cliente)
     else:
-        form = TransacaoForm()
+        conta = contas.first()  # Conta padrão
 
-    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form})
-
-
-
-
-def transacao_corrente(request):
-    conta = Conta.objects.filter(tipo_conta='Corrente').first() 
-    print(conta)
-    if conta is None:
-        messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
-        return redirect('transacao_corrente')
+    # Movimentações da conta selecionada
+    movimentacoes = Movimento.objects.filter(id_conta=conta).order_by('-data')
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
+    context = {
+        'contas': contas,
+        'conta_selecionada': conta,
+        'movimentacoes': movimentacoes,
+        'saldo': saldo_total
+    }
     
     if request.method == "POST":
         form = TransacaoForm(request.POST)
@@ -429,15 +388,9 @@ class ClienteListCreateView(generics.ListCreateAPIView):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
 
-#==================================================#
-
-
 # View para listar e criar contas
-
-# API View para listar e criar contas
-
 class ContaListCreateView(generics.ListCreateAPIView):
-    queryset = Conta.objects.select_related('id_cliente')
+    queryset = Conta.objects.select_related('id_cliente')  # Otimiza a consulta para incluir dados do cliente
     serializer_class = ContaSerializer
 
 class ClienteCreateAPIView(APIView):
