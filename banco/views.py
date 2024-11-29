@@ -169,9 +169,19 @@ def editar_saldo(request, conta_id):
     return render(request, 'clientes/editar_saldo.html', {'contas': contas})
 
 #==================================================#
+from django.db.models import Sum
 
 def menu(request):
-    cliente = Cliente.objects.filter(id=request.user.id)
+
+    cliente = Cliente.objects.get(id=request.user.id)
+
+    # Filtra todas as contas relacionadas ao cliente
+    contas = Conta.objects.filter(id_cliente=cliente)
+
+    # Soma os saldos diretamente
+    total_saldo = contas.aggregate(Sum('saldo'))['saldo__sum'] or 0
+
+    
     selected_conta_id = request.GET.get('conta_id')
 
     if not request.user.is_authenticated:
@@ -190,13 +200,13 @@ def menu(request):
     saldo = selected_conta_id.saldo if selected_conta_id else 0.00
 
     context = {
-        'cliente': cliente,
+        'cliente': cliente, 
         'contas': contas,
         'selected_conta_id': selected_conta_id,
-        'saldo': saldo
+        'saldo': total_saldo
     }
 
-    return render(request, 'clientes/menu.html', context)
+    return render(request, 'clientes/menu.html', {'total_saldo':total_saldo})
 
 def transacao_poupanca(request):
     conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
@@ -296,7 +306,7 @@ def transacao_poupanca(request):
     else:
         form = TransacaoForm()
 
-    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form})
+    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
 
 
 
@@ -327,7 +337,7 @@ def transacao_corrente(request):
     else:
         form = TransacaoForm()
 
-    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
+    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
 
 
 #==================================================================#
