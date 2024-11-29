@@ -212,40 +212,19 @@ def transferencia(request):
                     'contas_destino': contas_destino,
                 })
 
-            # Verifica se há saldo suficiente
-            if conta_origem.saldo < valor_transferencia:
-                return render(request, 'transferencia.html', {
-                    'error': 'Saldo insuficiente.',
-                    'contas_usuario': contas_usuario,
-                    'contas_destino': contas_destino,
-                })
-
-            # Realiza a transferência
-            conta_origem.saldo -= valor_transferencia
-            conta_destino.saldo += valor_transferencia
-            conta_origem.save()
-            conta_destino.save()
-
-            # Registra os movimentos
-            Movimento.objects.create(id_conta=conta_origem, tipo_movimento='Debito', valor=valor_transferencia)
-            Movimento.objects.create(id_conta=conta_destino, tipo_movimento='Credito', valor=valor_transferencia)
-
-            return render(request, 'clientes/transferencia.html', {
-                'success': 'Transferência realizada com sucesso.',
-                'contas_usuario': contas_usuario,
-                'contas_destino': [],
-            })
-    context ={
-        'contas_usuario': contas_usuario,
-        'contas_destino': contas_destino,
-        'cliente_destino': cliente_destino,
-        'cpf_destino': cpf_destino,
-        'saldo': saldo_total
-    }
-
-    return render(request, 'clientes/transferencia.html', context)
-@login_required
 def menu(request):
+
+    cliente = Cliente.objects.get(id=request.user.id)
+
+    # Filtra todas as contas relacionadas ao cliente
+    contas = Conta.objects.filter(id_cliente=cliente)
+
+    # Soma os saldos diretamente
+    total_saldo = contas.aggregate(Sum('saldo'))['saldo__sum'] or 0
+
+    
+    selected_conta_id = request.GET.get('conta_id')
+
     if not request.user.is_authenticated:
         return redirect('login')  # Redireciona para a página de login se necessário
 
@@ -260,11 +239,13 @@ def menu(request):
 
     # Passa os dados ao template
     context = {
-        'cliente': cliente,
+        'cliente': cliente, 
         'contas': contas,
-        'saldo': saldo_total
+        'selected_conta_id': selected_conta_id,
+        'saldo': total_saldo
     }
-    return render(request, 'clientes/menu.html', context)
+
+    return render(request, 'clientes/menu.html', {'total_saldo':total_saldo})
 
 def extrato_conta(request):
     cliente = request.user  # Cliente logado
@@ -346,7 +327,7 @@ def transacao_poupanca(request):
     else:
         form = TransacaoForm()
 
-    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form})
+    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
 
 
 
@@ -377,7 +358,7 @@ def transacao_corrente(request):
     else:
         form = TransacaoForm()
 
-    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
+    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
 
 
 #==================================================================#
@@ -432,10 +413,7 @@ def endereco(request):
 
     return render(request, 'localizacao/localizacao.html')
 
-
-
-#==================================================================#
-@login_required
+#@login_required
 
 def realizar_transferencia(request):
     if request.method == 'POST':
