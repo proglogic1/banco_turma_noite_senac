@@ -2,6 +2,7 @@ from django.urls import path,include
 from django.contrib.auth import views as auth_views
 from .views import *
 
+
 urlpatterns = [
 
     path('lista/',listar_clientes_contas,name='listar_clientes_contas'),#
@@ -38,7 +39,5 @@ urlpatterns = [
     path('reset/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path('reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
    
-    path('transferencia/', realizar_transferencia, name='tra'),
-
 ]
 
