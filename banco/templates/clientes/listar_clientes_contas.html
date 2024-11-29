@@ -24,14 +24,11 @@
                             <td>{{ conta.nr_agencia }}</td>
                             <td>{{ conta.tipo_conta }}</td>
                             <td>R$ {{ conta.saldo|floatformat:2 }}</td>
-                            
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-    
 </body>
 {% endblock %}
-
