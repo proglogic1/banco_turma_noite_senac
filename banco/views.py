@@ -398,7 +398,13 @@ def endereco(request):
     return render(request, 'localizacao/localizacao.html')
 
 
+
 #==================================================#
+
+
+
+#==================================================================#
+#@login_required
 
 def realizar_transferencia(request):
     if request.method == 'POST':
