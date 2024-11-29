@@ -7,6 +7,8 @@ from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_cont
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics,response,status
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from django.db.models import Sum
 
 #@login_required
 from django.http import JsonResponse
