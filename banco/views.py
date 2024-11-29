@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Cliente, Conta, Movimento
-from .forms import ClienteForm, ContaForm,ClienteAlterarForm,TransferenciaForm
+from .forms import ClienteForm, ContaForm,ClienteAlterarForm,TransferenciaForm, TransacaoForm
 from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe
 from .serializers import ClienteSerializer, ContaSerializer
 from rest_framework import generics,response,status
@@ -311,7 +311,7 @@ def transacao_poupanca(request):
         form = TransacaoForm(request.POST)
         if form.is_valid():
             
-            valor = Decimal(str(form.cleaned_data['valor']))
+            valor = float(str(form.cleaned_data['valor']))
             
             if 'depositar' in request.POST:
                 conta.saldo += valor 
@@ -345,7 +345,7 @@ def transacao_corrente(request):
         form = TransacaoForm(request.POST)
         if form.is_valid():
             # Converter valor para Decimal
-            valor = Decimal(str(form.cleaned_data['valor']))
+            valor = float(str(form.cleaned_data['valor']))
             if 'depositar' in request.POST:
                 conta.saldo += valor
                 messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")

@@ -42,6 +42,8 @@ class ClienteAlterarForm(forms.ModelForm):
         model = Cliente
         fields = ['nome', 'cpf', 'telefone', 'email']
 
+class TransacaoForm(forms.Form):
+    valor = forms.DecimalField(max_digits=10, decimal_places=2, min_value=0.01)
 
 class TransferenciaForm(forms.Form):
     conta_origem = forms.ModelChoiceField(
