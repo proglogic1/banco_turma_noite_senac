@@ -23,21 +23,21 @@
                 {% if user.is_authenticated %}
                     <!-- Exibe o nome do cliente e saldo -->
                 <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <strong>Bem-Vindo: {{ user.nome }}</strong> | Saldo: R$ {{ total_saldo|floatformat:1 }}
+                        <a class="nav-link" href="/"  style="white-space: nowrap;">
+                            <strong>Bem-Vindo: {{ user.nome }}</strong> | Saldo: R$ {{ total_saldo|floatformat:2 }}
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item"  style="white-space: nowrap;">
                         <a class="nav-link" href="{% url 'menu' %}">Menu</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item"  style="white-space: nowrap;">
                         <a class="nav-link" href="{% url 'logout' %}">
-                            <i class="bi bi-box-arrow-right"></i> Sair
+                            <i class="bi bi-box-arrow-right"></i>| Sair
                         </a>
                     </li>
                 {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">
+                    <li class="nav-item"  style="white-space: nowrap;">
+                        <a class="nav-link" href="{% url 'login' %}">|
                             <i class="bi bi-box-arrow-in-right"></i> Login
                         </a>
                     </li>
