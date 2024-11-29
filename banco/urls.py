@@ -1,12 +1,15 @@
 from django.urls import path,include
 from django.contrib.auth import views as auth_views
-from .views import *
+from .views import * 
+
+
+
+
 
 urlpatterns = [
-
-    path('lista/',listar_clientes_contas,name='listar_clientes_contas'),#
+    path('',listar_clientes_contas,name='listar_clientes_contas'),
     path('cadastro/', cadastrar_cliente , name ='cadastro' ),
-    path('', menu, name='menu'),#
+    path('menu/', menu, name='menu'),
     path('cadastrar_conta/', cadastrar_conta , name ='cadastrar_conta' ),
     path('atualizar_cadastro/<int:id>/', atualizar_cadastro, name='atualizar_cadastro'),
     path('atualizar_saldo/', atualizar_saldo, name='atualizar_saldo'),
@@ -38,7 +41,7 @@ urlpatterns = [
     path('reset/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path('reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
    
-    path('transferencia/', realizar_transferencia, name='tra'),
-
 ]
+
+
 
