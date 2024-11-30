@@ -1,16 +1,24 @@
-from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Cliente, Conta, Movimento
-from .forms import ClienteForm, ContaForm,ClienteAlterarForm,TransferenciaForm
+from .forms import ClienteForm, ContaForm,ClienteAlterarForm,TransferenciaForm, TransacaoForm
 from .utils import gerar_numero_conta, calcular_saldo_total, verificar_tipo_conta_existe, verificar_conta_existe
+from .forms import ClienteForm
 from .serializers import ClienteSerializer, ContaSerializer
-from rest_framework import generics,response,status
+from django.shortcuts import render, redirect, get_object_or_404
+import random
+from rest_framework import generics, response, status
 from rest_framework.views import APIView
-
-#@login_required
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+import requests  
+from datetime import datetime, time
+from decimal import Decimal
 from django.http import JsonResponse
-from .models import Cliente, Conta
+from django.db.models import Sum
+from django.core.paginator import Paginator
+
+
 
 @login_required
 def consulta_cliente_view(request):
@@ -95,7 +103,7 @@ def cadastrar_conta(request):
     saldo_total = calcular_saldo_total(cliente) if cliente else 0.0   
     context = {
         'form': form,
-        'saldo': saldo_total
+        'total_saldo': saldo_total
     }
     
 
@@ -115,7 +123,7 @@ def atualizar_cadastro(request, id):
     saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
     context = {
         'form': form,
-        'saldo': saldo_total
+        'total_saldo': saldo_total
     }
     return render(request, 'clientes/atualizar_cadastro.html',context)
 
@@ -130,7 +138,7 @@ def listar_clientes_contas(request):
 
     context = {
         'contas': contas,
-        'saldo': saldo_total
+        'total_saldo': saldo_total
     }
     return render(request, 'clientes/listar_clientes_contas.html', context)
     #return render(request, 'clientes/listar_clientes_contas.html', {'contas': contas})
@@ -166,14 +174,15 @@ def atualizar_saldo(request):
             tipo_movimento=tipo,
             valor=valor
         )
-
+ 
         messages.success(request, 'Saldo atualizado com sucesso.')
         return redirect('menu')
     saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
     contas = Conta.objects.filter(id_cliente=request.user)
     context = {
                'contas': contas,
-               'saldo':saldo_total
+               'total_saldo':saldo_total,
+               
               }
     return render(request, 'clientes/atualizar_saldo.html', context)
 
@@ -242,64 +251,51 @@ def menu(request):
         'cliente': cliente, 
         'contas': contas,
         'selected_conta_id': selected_conta_id,
-        'saldo': total_saldo
+        'total_saldo': total_saldo
     }
 
     return render(request, 'clientes/menu.html', {'total_saldo':total_saldo})
 
+
 def extrato_conta(request):
-    cliente = request.user  # Cliente logado
-    contas = Conta.objects.filter(id_cliente=cliente)  # Contas do cliente
-    
-    if not contas.exists():
-        return render(request, 'clientes/movimentacoes.html', {'error': 'Você não possui contas cadastradas.'})
+    cliente = request.user.id  # Cliente logado
+    conta_selecionada = None
+    movimentacoes = []
+    conta_id = request.GET.get('conta')
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    page = request.GET.get('page', 1)
 
-    # Conta padrão (primeira conta do cliente)
-    conta_id = request.GET.get('conta')  # ID da conta selecionada via combo box
+    contas = Conta.objects.filter(id_cliente=cliente)
+
     if conta_id:
-        conta = get_object_or_404(Conta, id_conta=conta_id, id_cliente=cliente)
-    else:
-        conta = contas.first()  # Conta padrão
+        conta_selecionada = Conta.objects.get(id_conta=conta_id)
+        movimentacoes = Movimento.objects.filter(id_conta=conta_selecionada)
+        
+        # Filtra por data, se as datas forem fornecidas
+        if data_inicio:
+            movimentacoes = movimentacoes.filter(data__gte=data_inicio)
+        if data_fim:
+            movimentacoes = movimentacoes.filter(data__lte=data_fim)
 
-    # Movimentações da conta selecionada
-    movimentacoes = Movimento.objects.filter(id_conta=conta).order_by('-data')
+    # Paginação
+    paginator = Paginator(movimentacoes, 10)  # 10 movimentações por página
+    movimentacoes = paginator.get_page(page)
     saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
     context = {
-        'contas': contas,
-        'conta_selecionada': conta,
+        'conta': contas,
+        'conta_selecionada': conta_selecionada,
         'movimentacoes': movimentacoes,
-        'saldo': saldo_total
+        'total_saldo' : saldo_total
     }
-    
-    if request.method == "POST":
-        form = TransacaoForm(request.POST)
-        if form.is_valid():
-            # Converter valor para Decimal
-            valor = Decimal(str(form.cleaned_data['valor']))
-            if 'depositar' in request.POST:
-                conta.saldo += valor
-                messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
-            elif 'sacar' in request.POST:
-                if conta.saldo >= valor:
-                    conta.saldo -= valor
-                    messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
-                else:
-                    messages.error(request, "Saldo insuficiente para realizar o saque.")
-            conta.save()
-            return redirect('menu')
-    else:
-        form = TransacaoForm()
 
-    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form})
-
-
-
-
-
+    return render(request, 'clientes/extrato.html', context)
 
 def transacao_poupanca(request):
-    conta = Conta.objects.filter(tipo_conta='Poupanca').first() 
-    print(conta)
+    cliente = request.user
+    conta = Conta.objects.filter(id_cliente=cliente,tipo_conta='Poupanca')
+    for i in conta:
+        print(i.saldo)
     if conta is None:
         messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
         return redirect('transacao_poupanca')  
@@ -309,32 +305,35 @@ def transacao_poupanca(request):
         form = TransacaoForm(request.POST)
         if form.is_valid():
             
-            valor = Decimal(str(form.cleaned_data['valor']))
+            valor = float(str(form.cleaned_data['valor']))
             
             if 'depositar' in request.POST:
-                conta.saldo += valor 
+                i.saldo += valor 
                 messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
             elif 'sacar' in request.POST:
-                if conta.saldo >= valor:
-                    conta.saldo -= valor  
+                if i.saldo >= valor:
+                    i.saldo -= valor  
                     messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
                 else:
                     messages.error(request, "Saldo insuficiente para realizar o saque.")
             
            
-            conta.save()
+            i.save()
             return redirect('menu')
     else:
         form = TransacaoForm()
+ #       saldo=conta.saldo
 
-    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
+    return render(request, 'clientes/poupanca.html', {'conta': conta, 'form': form, 'total_saldo': i.saldo})
 
 
 
 
 def transacao_corrente(request):
-    conta = Conta.objects.filter(tipo_conta='Corrente').first() 
-    print(conta)
+    cliente = request.user
+    conta = Conta.objects.filter(id_cliente= cliente, tipo_conta='Corrente')
+    for i in conta:
+        print(i.saldo)
     if conta is None:
         messages.error(request, "Nenhuma conta poupança encontrada. Por favor, crie uma antes de realizar transações.")
         return redirect('transacao_corrente')
@@ -343,22 +342,30 @@ def transacao_corrente(request):
         form = TransacaoForm(request.POST)
         if form.is_valid():
             # Converter valor para Decimal
-            valor = Decimal(str(form.cleaned_data['valor']))
+            valor = float(str(form.cleaned_data['valor']))
             if 'depositar' in request.POST:
-                conta.saldo += valor
+                i.saldo += valor
                 messages.success(request, f"Depósito de R$ {valor:.2f} realizado com sucesso!")
+                Movimento.objects.create(
+                id_conta=i  ,
+                tipo_movimento='Debito',
+                valor=valor
+                
+            )
+
             elif 'sacar' in request.POST:
-                if conta.saldo >= valor:
-                    conta.saldo -= valor
+                if i.saldo >= valor:
+                    i.saldo -= valor
                     messages.success(request, f"Saque de R$ {valor:.2f} realizado com sucesso!")
                 else:
                     messages.error(request, "Saldo insuficiente para realizar o saque.")
-            conta.save()
+            i.save()
             return redirect('menu')
     else:
         form = TransacaoForm()
-
-    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form, 'total_saldo':conta.saldo})
+        
+        
+    return render(request, 'clientes/corrente.html', {'conta': conta, 'form': form, 'total_saldo':i.saldo})
 
 
 #==================================================================#
@@ -416,38 +423,45 @@ def endereco(request):
 #@login_required
 
 def realizar_transferencia(request):
+    cliente = request.user.id
     if request.method == 'POST':
         conta_origem_id = request.POST.get('conta_origem')
+        
         conta_destino_id = request.POST.get('conta_destino')
         valor = float(request.POST.get('valor'))
+        
 
         # Obter as contas
         conta_origem = get_object_or_404(Conta, id_conta=conta_origem_id, id_cliente=request.user)
         conta_destino = get_object_or_404(Conta, id_conta=conta_destino_id)
 
-        # Verificar saldo suficiente na conta de origem
-        if not conta_origem.verificar_saldo(valor):
-            messages.error(request, "Saldo insuficiente para a transferência.")
+        #Verificar saldo suficiente na conta de origem
+        if   valor > conta_origem.saldo:
+            messages.error(request, 'Saldo insuficiente para débito.')
             return redirect('menu')
 
         try:
             # Atualizar saldos
-            conta_origem.atualizar_saldo(valor, is_credito=False)
-            conta_destino.atualizar_saldo(valor, is_credito=True)
+            
+            conta_destino.saldo += valor
+            
+            conta_origem.saldo -= valor
+            
+            conta_destino.save()
+            conta_origem.save()
 
             # Registrar movimentos
             Movimento.objects.create(
                 id_conta=conta_origem,
                 tipo_movimento='Debito',
-                valor=valor,
-                saldo_movimento=conta_origem.saldo,
-                conta_destinatario=conta_destino,
+                valor=valor
+                
             )
             Movimento.objects.create(
                 id_conta=conta_destino,
                 tipo_movimento='Credito',
-                valor=valor,
-                saldo_movimento=conta_destino.saldo,
+                valor=valor
+                
             )
 
             messages.success(request, "Transferência realizada com sucesso.")
@@ -455,9 +469,15 @@ def realizar_transferencia(request):
 
         except Exception as e:
             messages.error(request, f"Erro ao realizar transferência: {e}")
-    
-    contas = Conta.objects.filter(id_cliente=request.user)
-    return render(request, 'clientes/transferencia.html', {'contas': contas})
+            
+    saldo_total = calcular_saldo_total(cliente) if cliente else 0.0
+    contas = Conta.objects.filter(id_cliente=request.user.id)
+    context = {
+        'contas': contas,
+        'total_saldo':saldo_total
+    }
+    print(contas)
+    return render(request, 'clientes/transferencia.html',context)
 
 #==================================================#
 def realizar_saque(request, conta_id):
