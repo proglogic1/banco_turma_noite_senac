@@ -3,7 +3,7 @@ from django.db import models
 
 # Gerenciador de usuários personalizado
 class CustomUserManager(BaseUserManager):
-    def create_user(self, cpf, email, nome, telefone, password=None):
+    def create_superuser(self, cpf, email, telefone, password=None):
         """
         Cria e retorna um usuário com CPF, email e senha.
         """
@@ -16,7 +16,7 @@ class CustomUserManager(BaseUserManager):
         user = self.model(
             cpf=cpf,
             email=self.normalize_email(email),
-            nome=nome,
+            nome=cpf,
             telefone=telefone,
         )
         
