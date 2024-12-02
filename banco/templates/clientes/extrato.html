@@ -13,14 +13,24 @@
             <div class="form-group">
                 <label for="conta" class="form-label"><strong>Selecione a Conta:</strong></label>
                 <select name="conta" id="conta" class="form-select" onchange="this.form.submit()">
-                    {% for conta in contas %}
-                        <option value="{{ conta.id_conta }}" 
-                            {% if conta.id_conta == conta_selecionada.id_conta %}selected{% endif %}>
-                            {{ conta.nr_conta }} - {{ conta.nr_agencia }} ({{ conta.tipo_conta }})
+                    {% for contas in conta %}
+                        <option value="{{ contas.id_conta }}" 
+                            {% if contas.id_conta == conta_selecionada.id_conta %}selected{% endif %}>
+                            {{ contas.nr_conta }} - {{ contas.nr_agencia }} ({{ contas.tipo_conta }})
                         </option>
                     {% endfor %}
                 </select>
             </div>
+            <!-- Campos de filtro por data -->
+            <div class="form-group mt-3">
+                <label for="data_inicio" class="form-label"><strong>Data de Início:</strong></label>
+                <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
+            </div>
+            <div class="form-group mt-3">
+                <label for="data_fim" class="form-label"><strong>Data de Fim:</strong></label>
+                <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
+            </div>
+            
         </form>
 
         <div class="mt-4">
@@ -54,6 +64,21 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+                <!-- Paginação -->
+                <div class="pagination-container mt-4">
+                    {% if movimentacoes.has_previous %}
+                        <a href="?conta={{ conta_selecionada.id_conta }}&data_inicio={{ request.GET.data_inicio }}&data_fim={{ request.GET.data_fim }}&page=1" class="btn btn-secondary">Primeira</a>
+                        <a href="?conta={{ conta_selecionada.id_conta }}&data_inicio={{ request.GET.data_inicio }}&data_fim={{ request.GET.data_fim }}&page={{ movimentacoes.previous_page_number }}" class="btn btn-secondary">Anterior</a>
+                    {% endif %}
+
+                    <span>Página {{ movimentacoes.number }} de {{ movimentacoes.paginator.num_pages }}</span>
+
+                    {% if movimentacoes.has_next %}
+                        <a href="?conta={{ conta_selecionada.id_conta }}&data_inicio={{ request.GET.data_inicio }}&data_fim={{ request.GET.data_fim }}&page={{ movimentacoes.next_page_number }}" class="btn btn-secondary">Próxima</a>
+                        <a href="?conta={{ conta_selecionada.id_conta }}&data_inicio={{ request.GET.data_inicio }}&data_fim={{ request.GET.data_fim }}&page={{ movimentacoes.paginator.num_pages }}" class="btn btn-secondary">Última</a>
+                    {% endif %}
+                </div>
             {% else %}
                 <div class="alert alert-info text-center mt-3">
                     Não há movimentações para esta conta.

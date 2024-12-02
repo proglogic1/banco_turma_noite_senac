@@ -74,6 +74,39 @@
                 <a href="{% url 'transacao_corrente' %}" class="btn btn-primary mx-3">
                     <i class="bi bi-bank"></i> Transação Corrente
                 </a>
+    
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <!-- Exibe o nome do cliente e saldo -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <strong>Bem-Vindo: {{ user.nome }}</strong> | Saldo: R$ {{ total_saldo|floatformat:1 }}
+                            </a>
+                        </li>
+
+                        <!-- Botões para transações -->
+                        
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'menu' %}">Menu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right"></i> Sair
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
         </nav>
