@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-#zy05j=48x8_gdnu-=yf2m34b9c#y56ou&7bt0^c*pk-*q4(@u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['172.16.83.201','127.0.0.1']
+ALLOWED_HOSTS = [
+    '172.16.83.201',
+    '127.0.0.1',
+    'sistema-banco-senac-e46a505677f0.herokuapp.com'
+]
 
 
 # Application definition
@@ -122,6 +126,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR, 'STATIC']
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
 
 AUTH_USER_MODEL = 'banco.Cliente'
 
